@@ -23,7 +23,7 @@ public class Robot extends IterativeRobot {
 	public static CANTalon motor2 = new CANTalon(2);
 	public static CANTalon motor3 = new CANTalon(3);
 	
-	public final static double JoyKneeOne = 0.05;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
+	public final static double JoyKneeOne = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
     public final static double JoyKneeTwo = 0.8;         // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
     public final static double JoyMaxRange = 1.0;        // maximum input range of joysticks
 	
