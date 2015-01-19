@@ -148,11 +148,11 @@ public class Robot extends IterativeRobot {
          {
              if(R < 0.0)
              {
-                 R = (3.0 / 5.0) * Y - 0.02;     //changes raw negative input into a maneuverable speed
+                 R = (3.0 / 5.0) * R - 0.02;     //changes raw negative input into a maneuverable speed
              } 
              else
              {
-                 R = (3.0 / 5.0) * Y + 0.02;     //changes raw positive input into a maneuverable speed
+                 R = (3.0 / 5.0) * R + 0.02;     //changes raw positive input into a maneuverable speed
              }
          } 
          else
