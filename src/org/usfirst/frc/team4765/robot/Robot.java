@@ -85,11 +85,11 @@ public class Robot extends IterativeRobot {
          {
              if (Y < 0.0)
              {
-                 Y = (3.0 / 5.0) * Y - 0.02;     // changes raw negative input into a maneuverable speed
+                 Y = (3.0 / 7.5) * Y - 0.03;     // changes raw negative input into a maneuverable speed
              } 
              else
              {
-                 Y = (3.0 / 5.0) * Y + 0.02;     // changes raw positive input into a maneuverable speed
+                 Y = (3.0 / 7.5) * Y + 0.03;     // changes raw positive input into a maneuverable speed
              }
          } 
          else
@@ -98,74 +98,64 @@ public class Robot extends IterativeRobot {
              {
                  if(Y < 0)
                  {
-                     Y = (5.0 / 2.0) * Y + 1.5;  // changes raw negative input into a fast speed
+                     Y = (6.5 / 2.0) * Y + 2.25;  // changes raw negative input into a fast speed
                  } 
                  else
                  {
-                     Y = (5.0 / 2.0) * Y - 1.5;  // changes raw positive input into a fast speed
+                     Y = (6.5 / 2.0) * Y - 2.25;  // changes raw positive input into a fast speed
                  }
              }
          }
          
          
-         if(Math.abs(X) < JoyKneeOne) // deadzones
+         if ((Math.abs(X) >= JoyKneeOne) && (Math.abs(X) <= JoyKneeTwo)) // mapping for maneuvering range
          {
-             X = 0.0;
-         }
-
-         if((Math.abs(X) >= JoyKneeOne) && (Math.abs(X) <= JoyKneeTwo)) // mapping for maneuvering range
-         {
-             if(X < 0.0)
+             if (X < 0.0)
              {
-                 X = (3.0 / 5.0) * X - 0.02;
+                 X = (3.0 / 7.5) * X - 0.03;     // changes raw negative input into a maneuverable speed
              } 
              else
              {
-                 X = (3.0 / 5.0) * X + 0.02;
+                 X = (3.0 / 7.5) * X + 0.03;     // changes raw positive input into a maneuverable speed
              }
          } 
          else
          {
              if((Math.abs(X) > JoyKneeTwo) && (Math.abs(X) <= JoyMaxRange)) // mapping for speed range
              {
-                 if (X < 0.0)
+                 if(X < 0)
                  {
-                     X = (5.0 / 2.0) * X + 1.5;
-                 }
+                     X = (6.5 / 2.0) * X + 2.25;  // changes raw negative input into a fast speed
+                 } 
                  else
                  {
-                     X = (5.0 / 2.0) * X - 1.5;
+                     X = (6.5 / 2.0) * X - 2.25;  // changes raw positive input into a fast speed
                  }
              }
          }
          
-         if(Math.abs(R) < JoyKneeOne) // deadzones
+         if ((Math.abs(R) >= JoyKneeOne) && (Math.abs(R) <= JoyKneeTwo)) // mapping for maneuvering range
          {
-             R = 0.0;
-         }
-
-         if((Math.abs(R) >= JoyKneeOne) && (Math.abs(R) <= JoyKneeTwo)) //mapping for maneuvering range
-         {
-             if(R < 0.0)
+             if (R < 0.0)
              {
-                 R = (3.0 / 5.0) * R - 0.02;     //changes raw negative input into a maneuverable speed
+                 R = (3.0 / 7.5) * R - 0.03;     // changes raw negative input into a maneuverable speed
              } 
              else
              {
-                 R = (3.0 / 5.0) * R + 0.02;     //changes raw positive input into a maneuverable speed
+                 R = (3.0 / 7.5) * R + 0.03;     // changes raw positive input into a maneuverable speed
              }
          } 
          else
          {
-             if((Math.abs(R) > JoyKneeTwo) && (Math.abs(R) <= JoyMaxRange)) //mapping for speed range
+             if((Math.abs(R) > JoyKneeTwo) && (Math.abs(R) <= JoyMaxRange)) // mapping for speed range
              {
                  if(R < 0)
                  {
-                     R = (5.0 / 2.0) * R + 1.5;  //changes raw negative input into a fast speed
+                     R = (6.5 / 2.0) * R + 2.25;  // changes raw negative input into a fast speed
                  } 
                  else
                  {
-                     R = (5.0 / 2.0) * R - 1.5;  //changes raw positive input into a fast speed
+                     R = (6.5 / 2.0) * R - 2.25;  // changes raw positive input into a fast speed
                  }
              }
          }
