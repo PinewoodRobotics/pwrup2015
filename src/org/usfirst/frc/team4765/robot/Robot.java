@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
+
 public class Robot extends IterativeRobot {
 	RobotDrive myRobot;
 	Joystick stick;
@@ -21,6 +22,10 @@ public class Robot extends IterativeRobot {
 	public static CANTalon motor1 = new CANTalon(1); 
 	public static CANTalon motor2 = new CANTalon(2);
 	public static CANTalon motor3 = new CANTalon(3);
+	
+	public final static double JoyKneeOne = 0.05;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
+    public final static double JoyKneeTwo = 0.8;         // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
+    public final static double JoyMaxRange = 1.0;        // maximum input range of joysticks
 	
     /**
      * This function is run when the robot is first started up and should be
@@ -38,11 +43,12 @@ public class Robot extends IterativeRobot {
     public void autonomousInit() {
     	autoLoopCounter = 0;
     }
-
+   
     /**
      * This function is called periodically during autonomous
      */
-    public void autonomousPeriodic() {
+    public void autonomousPeriodic() 
+    {
     	if(autoLoopCounter < 100) //Check if we've completed 100 loops (approximately 2 seconds)
 		{
 			myRobot.drive(-0.5, 0.0); 	// drive forwards half speed
@@ -55,17 +61,116 @@ public class Robot extends IterativeRobot {
     /**
      * This function is called once each time the robot enters tele-operated mode
      */
-    public void teleopInit(){
+    public void teleopInit()
+    {
+    	
     }
 
     /**
      * This function is called periodically during operator control
      */
-    public void teleopPeriodic() {
+    public void teleopPeriodic() 
+    {
     	
     	double Y = driver.getY();
     	double X = driver.getX();
-    	double R = driver.getZ(); // this might be wrong 
+    	double R = driver.getZ();    	
+
+         if (Math.abs(Y) < JoyKneeOne) // deadzones
+         {
+             Y = 0.0;
+         }
+
+         if ((Math.abs(Y) >= JoyKneeOne) && (Math.abs(Y) <= JoyKneeTwo)) // mapping for maneuvering range
+         {
+             if (Y < 0.0)
+             {
+                 Y = (3.0 / 5.0) * Y - 0.02;     // changes raw negative input into a maneuverable speed
+             } 
+             else
+             {
+                 Y = (3.0 / 5.0) * Y + 0.02;     // changes raw positive input into a maneuverable speed
+             }
+         } 
+         else
+         {
+             if((Math.abs(Y) > JoyKneeTwo) && (Math.abs(Y) <= JoyMaxRange)) // mapping for speed range
+             {
+                 if(Y < 0)
+                 {
+                     Y = (5.0 / 2.0) * Y + 1.5;  // changes raw negative input into a fast speed
+                 } 
+                 else
+                 {
+                     Y = (5.0 / 2.0) * Y - 1.5;  // changes raw positive input into a fast speed
+                 }
+             }
+         }
+         
+         
+         if(Math.abs(X) < JoyKneeOne) // deadzones
+         {
+             X = 0.0;
+         }
+
+         if((Math.abs(X) >= JoyKneeOne) && (Math.abs(X) <= JoyKneeTwo)) // mapping for maneuvering range
+         {
+             if(X < 0.0)
+             {
+                 X = (3.0 / 5.0) * X - 0.02;
+             } 
+             else
+             {
+                 X = (3.0 / 5.0) * X + 0.02;
+             }
+         } 
+         else
+         {
+             if((Math.abs(X) > JoyKneeTwo) && (Math.abs(X) <= JoyMaxRange)) // mapping for speed range
+             {
+                 if (X < 0.0)
+                 {
+                     X = (5.0 / 2.0) * X + 1.5;
+                 }
+                 else
+                 {
+                     X = (5.0 / 2.0) * X - 1.5;
+                 }
+             }
+         }
+         
+         if(Math.abs(R) < JoyKneeOne) // deadzones
+         {
+             R = 0.0;
+         }
+
+         if((Math.abs(R) >= JoyKneeOne) && (Math.abs(R) <= JoyKneeTwo)) //mapping for maneuvering range
+         {
+             if(R < 0.0)
+             {
+                 R = (3.0 / 5.0) * Y - 0.02;     //changes raw negative input into a maneuverable speed
+             } 
+             else
+             {
+                 R = (3.0 / 5.0) * Y + 0.02;     //changes raw positive input into a maneuverable speed
+             }
+         } 
+         else
+         {
+             if((Math.abs(R) > JoyKneeTwo) && (Math.abs(R) <= JoyMaxRange)) //mapping for speed range
+             {
+                 if(R < 0)
+                 {
+                     R = (5.0 / 2.0) * R + 1.5;  //changes raw negative input into a fast speed
+                 } 
+                 else
+                 {
+                     R = (5.0 / 2.0) * R - 1.5;  //changes raw positive input into a fast speed
+                 }
+             }
+         }
+
+
     	
     	double motor1speed = X + Y + -0.5 * R;
     	double motor2speed = -1.0 * X + Y + 0.5 * R;
@@ -87,7 +192,7 @@ public class Robot extends IterativeRobot {
     	
     	
     	
-    	//make another method for controlling and call it in teleop for organization?
+    	// TODO: make another method for controlling and call it in teleop for organization
     		
         myRobot.arcadeDrive(stick);
     }
