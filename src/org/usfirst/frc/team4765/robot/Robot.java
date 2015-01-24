@@ -1,12 +1,14 @@
 package org.usfirst.frc.team4765.robot;
 
+import edu.wpi.first.wpilibj.CANTalon.ControlMode;
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.can.*;
 
 
 /**
@@ -40,7 +42,14 @@ public class Robot extends IterativeRobot
     double StartPosition;
 
     double[] motorSpeed = new double[4]; //holds motor speeds (in rpm)
-
+    
+    int CANTimeouts;
+    
+    public void CANTimeout()
+    {
+        CANTimeouts++;
+        SmartDashboard.putNumber("CANTimeouts", CANTimeouts);
+    }
 	
     /**
      * This function is run when the robot is first started up and should be
@@ -52,6 +61,102 @@ public class Robot extends IterativeRobot
     	myRobot = new RobotDrive(0,1);
     	stick = new Joystick(0);
     }    
+    
+    /**
+     * This function is called once before autonomous control
+     */
+    public void disabledInit()
+    {
+        System.out.println("### DISABLED ###");
+    }
+
+    
+    /*
+     * Smartdashboard controls
+     */
+    public void updatePrefs()
+    {
+        MAX_RPM = prefs.getDouble("M", 0.0);
+        P = prefs.getDouble("P", 0.0);   //can change values from here, press button to activate changes
+        I = prefs.getDouble("I", 0.0);
+        D = prefs.getDouble("D", 0.0);
+        SmartDashboard.putNumber("Talon P", P);  //displays PID values on SmartDash
+        SmartDashboard.putNumber("Talon I", I);
+        SmartDashboard.putNumber("Talon D", D);
+        SmartDashboard.putNumber("MAX_RPM", MAX_RPM);
+        try
+        {
+            motor1.setPID(P, I, D);  //sets PID constants for Jag PID loop
+            motor2.setPID(P, I, D);
+            motor3.setPID(P, I, D);
+            motor1.enableControl(); //starts feedback ctrl
+            motor2.enableControl();
+            motor3.enableControl();
+        } 
+        catch (CANInvalidBufferException ex)
+        {
+            CANTimeout();
+        }
+        System.out.println("finished prefs");
+    }
+
+    public void robotInitDummy()
+    {
+        SmartDashboard.putNumber("CAN timeouts", CANTimeouts);
+        boolean CANInit = false;
+        CANTimeouts = 0;
+        while (CANInit == false)
+        {
+            try
+            {
+				//                m_telePeriodicLoops = 0;                              // Reset the number of loops in current second
+//                m_dsPacketsReceivedInCurrentSecond = 0;                 // Reset the number of dsPackets in current second
+            	motor1.changeControlMode(CANTalon.ControlMode.Speed);
+            	motor2.changeControlMode(CANTalon.ControlMode.Speed);
+            	motor3.changeControlMode(CANTalon.ControlMode.Speed);
+            	
+            	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+            	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+            	motor3.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+            	
+            	motor1.setVoltageRampRate(15); // TODO: put the correct voltage
+            	motor2.setVoltageRampRate(15); // TODO: put the correct voltage
+            	motor3.setVoltageRampRate(15); // TODO: put the correct voltage
+            	
+            	//motor1. // configure degrees per second
+            	
+            	
+                
+                //motor1.setSpeedReference(CANJaguar.SpeedReference.kQuadEncoder);    //chooses which kind of encoder to determine speed feedback
+                //motor2.setSpeedReference(CANJaguar.SpeedReference.kQuadEncoder);
+                //motor3.setSpeedReference(CANJaguar.SpeedReference.kQuadEncoder);
+                //motor1.setVoltageRampRate(15); 
+                //motor2.setVoltageRampRate(15);
+                //motor3.setVoltageRampRate(15);
+                //motor1.configEncoderCodesPerRev(256);   //counts pulses per revolution
+                //motor2.configEncoderCodesPerRev(256);
+                //motor3.configEncoderCodesPerRev(256);
+                //StartPosition = motor1.getPosition();
+            	            	
+                updatePrefs(); // TODO: set P, I, D, F
+                                
+                motor1.set(0);
+                motor2.set(0);
+                motor3.set(0);
+
+                motor1.enableControl(); //starts feedback ctrl
+                motor2.enableControl();
+                motor3.enableControl();
+                
+                CANInit = true;
+            } 
+            catch (CANInvalidBufferException ex)
+            {
+                CANTimeout();
+            }
+        }
+        System.out.println("###  S A D B O Y S HAVE ARRIVED  ###");
+    }
     
     /**
      * This function is run once each time the robot enters autonomous mode
@@ -82,7 +187,7 @@ public class Robot extends IterativeRobot
     {
     	
     }
-    
+        
     /**
      * This takes the raw input values from the joystick and maps them into more convenient speeds.
      * There is a deadzone of the first 10% of the joystick range.
