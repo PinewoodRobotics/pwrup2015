@@ -29,7 +29,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	int autoLoopCounter;
 	
 	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
-	public static Joystick operator = new Joystick(6); // joystick that controls the chain movement
+	//public static Joystick operator = new Joystick(6); // joystick that controls the chain movement
 	
 	public static CANTalon motor1 = new CANTalon(1); 
 	public static CANTalon motor2 = new CANTalon(2);
@@ -37,11 +37,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	
 	// tower drivers for chain are regular Talons
 	 
-	//public static Talon motor4 = new Talon(4);
-	//public static Talon motor5 = new Talon(5); // motors for the chain
+	public static Talon tower1 = new Talon(4);
+	public static Talon tower2 = new Talon(11); // motors for the chain
 	
-	DigitalInput halifax1;
-	DigitalInput halifax2;
+	DigitalInput halifax1 = new DigitalInput(8);
+	DigitalInput halifax2 = new DigitalInput(9);
 	
 	public final static double DeadZone     = 0.05;
 	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
