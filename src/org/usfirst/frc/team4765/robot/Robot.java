@@ -2,11 +2,13 @@ package org.usfirst.frc.team4765.robot;
 
 import edu.wpi.first.wpilibj.CANTalon.ControlMode;
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.can.*;
@@ -32,10 +34,14 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	public static CANTalon motor1 = new CANTalon(1); 
 	public static CANTalon motor2 = new CANTalon(2);
 	public static CANTalon motor3 = new CANTalon(3); // motors for driving
+	
 	// tower drivers for chain are regular Talons
 	 
 	//public static Talon motor4 = new Talon(4);
 	//public static Talon motor5 = new Talon(5); // motors for the chain
+	
+	DigitalInput halifax1;
+	DigitalInput halifax2;
 	
 	public final static double DeadZone     = 0.05;
 	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
@@ -130,6 +136,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
             {
 				// m_telePeriodicLoops = 0;                 // Reset the number of loops in current second
             	// m_dsPacketsReceivedInCurrentSecond = 0;  // Reset the number of dsPackets in current second
+            	
+            	motor1 = new CANTalon(1);
+            	motor2 = new CANTalon(2);
+            	motor3 = new CANTalon(3);
+            	
             	motor1.changeControlMode(CANTalon.ControlMode.Speed);
             	motor2.changeControlMode(CANTalon.ControlMode.Speed);
             	motor3.changeControlMode(CANTalon.ControlMode.Speed);
@@ -142,7 +153,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
             	motor2.setVoltageRampRate(15); // TODO: put the correct voltage
             	motor3.setVoltageRampRate(15); // TODO: put the correct voltage
             	
-            	//motor1. // configure degrees per second
+            	//motor1. // TODO: configure degrees per second
             	
             	
                 
@@ -226,11 +237,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	{
 	    		if( V < 0.0)
 	    		{
-	    			V = m1 * (V - JoyKneeTwoX_) - JoyKneeTwoY_;
+	    			V = m1 * (V - JoyKneeTwoX_) - JoyKneeTwoY_;	// maneuverable speed
 	    		}
 	    		else
 	    		{
-	    			V = m1 * (V - JoyKneeTwoX_) + JoyKneeTwoY_;
+	    			V = m1 * (V - JoyKneeTwoX_) + JoyKneeTwoY_;	// maneuverable speed
 	    		}
 	    	}
 	    	else
@@ -239,11 +250,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	            {
 	                if(V < 0.0)
 	                {
-	                    V = m2 * (V - JoyMaxRange_) - JoyMaxRange_;  // changes raw negative input into a fast speed
+	                    V = m2 * (V - JoyMaxRange_) - JoyMaxRange_;  // fast speed
 	                } 
 	                else
 	                {
-	                	V = m2 * (V - JoyMaxRange_) + JoyMaxRange_;  // changes raw positive input into a fast speed
+	                	V = m2 * (V - JoyMaxRange_) + JoyMaxRange_;  // fast speed
 	                }
 	            }
 	    	}
@@ -297,8 +308,16 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public void testPeriodic() 
     {
     	LiveWindow.run();
+    	printSensorValues();
+    	Timer.delay(0.5);
+    	
     }
-    
-    // TODO: add method that prints the sensor values on the robot, no driving
-    
+    /**
+     * Prints halifax values
+     */
+    public void printSensorValues()
+    {
+    	System.out.println(halifax1.get());
+    	System.out.println(halifax2.get());
+    }
 }
