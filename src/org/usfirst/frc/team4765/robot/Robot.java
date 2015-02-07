@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.can.*;
 
 
@@ -37,8 +38,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	
 	// tower drivers for chain are regular Talons
 	 
-	public static Talon tower1 = new Talon(4);
-	public static Talon tower2 = new Talon(11); // motors for the chain
+	public static Talon tower1 = new Talon(8);
+	public static Talon tower2 = new Talon(9); // motors for the chain
+	
+	JoystickButton run  = new JoystickButton(driver, 11);
+	JoystickButton step = new JoystickButton(driver, 12);
 	
 	DigitalInput halifax1 = new DigitalInput(8);
 	DigitalInput halifax2 = new DigitalInput(9);
@@ -307,7 +311,17 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void testPeriodic() 
     {
-    	LiveWindow.run();
+    	double throttle = driver.getThrottle();
+    	if(run.get() || (step.get() && halifax1.get()))
+    	{
+    		tower1.set(throttle);
+    	}
+    	
+    	if(run.get() || (step.get() && halifax2.get()))
+    	{
+    		tower2.set(throttle);
+    	}
+
     	printSensorValues();
     	Timer.delay(0.5);
     	
