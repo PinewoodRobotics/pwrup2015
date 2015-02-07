@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.can.*;
@@ -19,25 +20,36 @@ import edu.wpi.first.wpilibj.can.*;
  * directory.
  */
 
-public class Robot extends IterativeRobot 
+public class Robot extends IterativeRobot // check the error, this happened after our late night drawing trouble shooting
 {
 	RobotDrive myRobot;
 	Joystick stick;
 	int autoLoopCounter;
-	public static Joystick driver = new Joystick(0);
+	
+	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
+	public static Joystick operator = new Joystick(6); // joystick that controls the chain movement
+	
 	public static CANTalon motor1 = new CANTalon(1); 
 	public static CANTalon motor2 = new CANTalon(2);
-	public static CANTalon motor3 = new CANTalon(3);
+	public static CANTalon motor3 = new CANTalon(3); // motors for driving
+	// tower drivers for chain are regular Talons
+	 
+	//public static Talon motor4 = new Talon(4);
+	//public static Talon motor5 = new Talon(5); // motors for the chain
 	
-	public final static double JoyKneeOne = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
-    public final static double JoyKneeTwo = 0.8;         // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
-    public final static double JoyMaxRange = 1.0;        // maximum input range of joysticks
+	public final static double DeadZone     = 0.05;
+	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
+    public final static double JoyKneeTwoX_ = 0.8;        // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
+    public final static double JoyMaxRange_ = 1.0;        // maximum input range of joysticks
+    public final static double JoyKneeOneY_ = 0;		  // starts the first leg of the mapping
+    public final static double JoyKneeTwoY_ = 0.35;		  
     
     Preferences prefs = Preferences.getInstance();
 
     double P;
     double I;
     double D;
+    double F;
     double MAX_RPM;
     double StartPosition;
 
@@ -80,15 +92,22 @@ public class Robot extends IterativeRobot
         P = prefs.getDouble("P", 0.0);   //can change values from here, press button to activate changes
         I = prefs.getDouble("I", 0.0);
         D = prefs.getDouble("D", 0.0);
+        F = prefs.getDouble("F", 0.0);
+        
         SmartDashboard.putNumber("Talon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("Talon I", I);
         SmartDashboard.putNumber("Talon D", D);
+        SmartDashboard.putNumber("Talon F", F);
+        
         SmartDashboard.putNumber("MAX_RPM", MAX_RPM);
         try
         {
-            motor1.setPID(P, I, D);  //sets PID constants for Jag PID loop
+            motor1.setPID(P, I, D);  //sets PID constants 
+            motor1.setF(F);			 // TODO: look into izone, closeLoopRampRate, profile
             motor2.setPID(P, I, D);
+            motor2.setF(F);
             motor3.setPID(P, I, D);
+            motor3.setF(F);
             motor1.enableControl(); //starts feedback ctrl
             motor2.enableControl();
             motor3.enableControl();
@@ -109,8 +128,8 @@ public class Robot extends IterativeRobot
         {
             try
             {
-				//                m_telePeriodicLoops = 0;                              // Reset the number of loops in current second
-//                m_dsPacketsReceivedInCurrentSecond = 0;                 // Reset the number of dsPackets in current second
+				// m_telePeriodicLoops = 0;                 // Reset the number of loops in current second
+            	// m_dsPacketsReceivedInCurrentSecond = 0;  // Reset the number of dsPackets in current second
             	motor1.changeControlMode(CANTalon.ControlMode.Speed);
             	motor2.changeControlMode(CANTalon.ControlMode.Speed);
             	motor3.changeControlMode(CANTalon.ControlMode.Speed);
@@ -155,7 +174,7 @@ public class Robot extends IterativeRobot
                 CANTimeout();
             }
         }
-        System.out.println("###  S A D B O Y S HAVE ARRIVED  ###");
+        System.out.println("### GOT EM' COACH  ###");
     }
     
     /**
@@ -190,64 +209,68 @@ public class Robot extends IterativeRobot
         
     /**
      * This takes the raw input values from the joystick and maps them into more convenient speeds.
-     * There is a deadzone of the first 10% of the joystick range.
-     * From 10% to 80% of the range, the slope of the line is not 1, it is less.
-     * From 80% to 100% of the range the slope is high for driving quickly.
-     * These values are subject to change.
-     * 
-     * TODO: make separate method for R in case we need different knees.
+     * The pre-set values can be changed where constants are initialized.
      */    
-    public double mapValue(double V)
+    public double mapDrivingValue(double V)
     {
-    	if (Math.abs(V) < JoyKneeOne) // deadzones
-        {
-            V = 0.0;
-        }
-
-        if ((Math.abs(V) >= JoyKneeOne) && (Math.abs(V) <= JoyKneeTwo)) // mapping for maneuvering range
-        {
-            if (V < 0.0)
-            {
-                V = (3.0 / 7.5) * V - 0.03;     // changes raw negative input into a maneuverable speed
-            } 
-            else
-            {
-                V = (3.0 / 7.5) * V + 0.03;     // changes raw positive input into a maneuverable speed
-            }
-        } 
-        else
-        {
-            if((Math.abs(V) > JoyKneeTwo) && (Math.abs(V) <= JoyMaxRange)) // mapping for speed range
-            {
-                if(V < 0)
-                {
-                    V = (6.5 / 2.0) * V + 2.25;  // changes raw negative input into a fast speed
-                } 
-                else
-                {
-                    V = (6.5 / 2.0) * V - 2.25;  // changes raw positive input into a fast speed
-                }
-            }
-        }        
-        return V;
+    	double m1 = (JoyKneeTwoY_)/(JoyKneeTwoX_ - DeadZone);
+    	double m2 = (JoyMaxRange_ - JoyKneeTwoY_)/(JoyMaxRange_ - JoyKneeTwoX_);
+    	
+    	if(Math.abs(V) < JoyKneeOneX_) // deadzone
+    	{
+    		V = 0.0;
+    	}
+    	else
+    	{
+	    	if ((Math.abs(V) >= JoyKneeOneX_) && (Math.abs(V) <= JoyKneeTwoX_)) // mapping for maneuvering range
+	    	{
+	    		if( V < 0.0)
+	    		{
+	    			V = m1 * (V - JoyKneeTwoX_) - JoyKneeTwoY_;
+	    		}
+	    		else
+	    		{
+	    			V = m1 * (V - JoyKneeTwoX_) + JoyKneeTwoY_;
+	    		}
+	    	}
+	    	else
+	    	{
+	    		if((Math.abs(V) > JoyKneeTwoX_) && (Math.abs(V) <= JoyMaxRange_)) // mapping for speed range
+	            {
+	                if(V < 0.0)
+	                {
+	                    V = m2 * (V - JoyMaxRange_) - JoyMaxRange_;  // changes raw negative input into a fast speed
+	                } 
+	                else
+	                {
+	                	V = m2 * (V - JoyMaxRange_) + JoyMaxRange_;  // changes raw positive input into a fast speed
+	                }
+	            }
+	    	}
+    	}
+    	return V;
     }
     
     /**
      * This function is called periodically during operator control
+     * TODO: implement motor4, motor5 and the mapping for them
      */
     public void teleopPeriodic() 
     {    	
     	double Y = driver.getY();
     	double X = driver.getX();
-    	double R = driver.getZ();    	
-
-        Y = mapValue(Y);
-        X = mapValue(X);
-        R = mapValue(R);
+    	double R = driver.getZ(); 
     	
-    	double motor1speed = X + Y + -0.5 * R;
+    	//double A = operator.getY();
+
+        Y = mapDrivingValue(Y);
+        X = mapDrivingValue(X);		// changes the values for easier driving
+        R = mapDrivingValue(R);
+    	
+    	double motor1speed = X + Y + -0.5 * R; 
     	double motor2speed = -1.0 * X + Y + 0.5 * R;
     	double motor3speed = 0.5 * X + R;
+    	//double motor4speed = 0.5 * A;
     	
     	double biggestValue = Math.max(motor1speed, Math.max(motor2speed, motor3speed));
     	
@@ -258,9 +281,12 @@ public class Robot extends IterativeRobot
     		motor3speed /= biggestValue;
     	}
     		
-    	motor1.set(-1.0 * motor1speed);
+    	motor1.set(motor1speed * -1.0);
     	motor2.set(motor2speed);
     	motor3.set(motor3speed);
+    	
+    	//motor4.set(motor4speed);
+    	//motor5.set(motor4speed);
         		
         //myRobot.arcadeDrive(stick);
     }
@@ -272,5 +298,7 @@ public class Robot extends IterativeRobot
     {
     	LiveWindow.run();
     }
+    
+    // TODO: add method that prints the sensor values on the robot, no driving
     
 }
