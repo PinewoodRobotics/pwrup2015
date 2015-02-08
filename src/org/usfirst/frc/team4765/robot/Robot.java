@@ -44,8 +44,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton run  = new JoystickButton(driver, 11);
 	JoystickButton step = new JoystickButton(driver, 12);
 	
-	DigitalInput halifax1 = new DigitalInput(8);
-	DigitalInput halifax2 = new DigitalInput(9);
+	DigitalInput hallEffect1 = new DigitalInput(8);
+	DigitalInput hallEffect2 = new DigitalInput(9);
 	
 	public final static double DeadZone     = 0.05;
 	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
@@ -60,8 +60,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     double I;
     double D;
     double F;
-    double MAX_RPM;
+    int    iZone; 			// i-zone that gives I a limit to cumulation
+    double Ramp; 			// closeLoopRampRate Maximum change in voltage, Unit: volts/sec
+    double MaxRPM;
     double StartPosition;
+    int Profile;	    // value of 0 or 1
 
     double[] motorSpeed = new double[4]; //holds motor speeds (in rpm)
     
@@ -82,11 +85,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor3.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-    	
-    	
-        System.out.println("robotInit()");
-    	myRobot = new RobotDrive(0,1);
-    	stick = new Joystick(0);
+    	updatePrefs();
+    	System.out.println("### GOT EM' COACH  ###");
     }    
     
     /**
@@ -103,26 +103,29 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void updatePrefs()
     {
-        MAX_RPM = prefs.getDouble("M", 0.0);
-        P = prefs.getDouble("P", 0.0);   //can change values from here, press button to activate changes
+        MaxRPM = prefs.getDouble("MaxRPM", 862.0);
+        P = prefs.getDouble("P", 0.0);   // can change values from here, press button to activate changes
         I = prefs.getDouble("I", 0.0);
         D = prefs.getDouble("D", 0.0);
-        F = prefs.getDouble("F", 0.0);
+        F = prefs.getDouble("F", 1.0);
+        iZone = prefs.getInt("iZone", 0);
+        Ramp = prefs.getDouble("Ramp", 1200.0);
+        // Profile = prefs.getInt("Profile", 0);
         
-        SmartDashboard.putNumber("Talon P", P);  //displays PID values on SmartDash
-        SmartDashboard.putNumber("Talon I", I);
-        SmartDashboard.putNumber("Talon D", D);
-        SmartDashboard.putNumber("Talon F", F);
+        SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
+        SmartDashboard.putNumber("CANTalon I", I);
+        SmartDashboard.putNumber("CANTalon D", D);
+        SmartDashboard.putNumber("CANTalon F", F);
+        SmartDashboard.putNumber("CANTalon iZone", iZone);
+        SmartDashboard.putNumber("CANTalon Ramp", Ramp);
+        SmartDashboard.putNumber("MaxRPM", MaxRPM);
         
-        SmartDashboard.putNumber("MAX_RPM", MAX_RPM);
         try
         {
-            motor1.setPID(P, I, D);  //sets PID constants 
-            motor1.setF(F);			 // TODO: look into izone, closeLoopRampRate, profile
-            motor2.setPID(P, I, D);
-            motor2.setF(F);
-            motor3.setPID(P, I, D);
-            motor3.setF(F);
+            motor1.setPID(P, I, D, F, iZone, Ramp, 0);  //sets PID constants 
+            motor2.setPID(P, I, D, F, iZone, Ramp, 0);
+            motor3.setPID(P, I, D, F, iZone, Ramp, 0);
+            
             motor1.enableControl(); //starts feedback ctrl
             motor2.enableControl();
             motor3.enableControl();
@@ -314,9 +317,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor2speed = motor2speed * throttle;
     	motor3speed = motor3speed * throttle;
     		
-    	motor1.set(motor1speed * -1.0);
-    	motor2.set(motor2speed);
-    	motor3.set(motor3speed);
+    	motor1.set(MaxRPM * motor1speed * -1.0);
+    	motor2.set(MaxRPM * motor2speed);
+    	motor3.set(MaxRPM * motor3speed);
     	
     	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     	
@@ -336,7 +339,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	if(throttle > 0.5)
     		throttle = 0.5;
     	
-    	if(run.get() || (step.get() && halifax1.get()))
+    	if(run.get() || (step.get() && hallEffect1.get()))
     	{
     		tower1.set(0.9 * throttle);
     	}
@@ -345,7 +348,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     		tower1.set(0.0);
     	}
     	
-    	if(run.get() || (step.get() && halifax2.get()))
+    	if(run.get() || (step.get() && hallEffect2.get()))
     	{
     		tower2.set(throttle);
     	}
@@ -356,22 +359,23 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 
     	printSensorValues();
     	//Timer.delay(0.5);
-    	
     }
     
     public void testPeriodic()
-    { /*
-    	MAX: 1283     926     867
+    { 
+    	/*
+    	MAX: 1283       926      867
     	MIN: -1287     -909     -874
-    	MAX: 1279     927     869
+    	MAX: 1279       927      869
     	MIN: -1276     -910     -874
-    	MAX: 1272     931     873
+    	MAX: 1272       931      873
     	MIN: -1268     -915     -874
-    	MAX: 1272     928     872
+    	MAX: 1272       928      872
     	MIN: -1265     -916     -875
-    	MAX: 1270     928     870
+    	MAX: 1270       928      870
     	MIN: -1265     -917     -876
-     */
+        */
+    	
     	motor1.set(1);
     	motor2.set(1);
     	motor3.set(1);
@@ -397,6 +401,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void printSensorValues()
     {
-    	System.out.println(halifax1.get() + "                    " + halifax2.get());
+    	System.out.println(hallEffect1.get() + "                    " + hallEffect2.get());
     }
 }
