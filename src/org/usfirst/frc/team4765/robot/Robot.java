@@ -108,7 +108,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void updatePrefs()
     {
-    	boolean s = true;
+    	//boolean s = true;
         MaxRPM = prefs.getDouble("MaxRPM", 862.0);
         P = prefs.getDouble("P", 0.0);   // can change values from here, press button to activate changes        
         I = prefs.getDouble("I", 0.0);
@@ -123,7 +123,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         prefs.putDouble("F", F);
         prefs.putInt("iZone", iZone);
         prefs.putDouble("Ramp", Ramp);
-        prefs.putBoolean("~S A V E~", s);
+        //prefs.putBoolean("~S A V E~", s);
         
         // Profile = prefs.getInt("Profile", 0);
         
@@ -431,8 +431,12 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public void testPeriodic()
     {
     	SmartDashboard.putNumber("Motor1Speed", motor1.getEncVelocity());
-    	motor1.set(1);
     	System.out.println(motor1.getEncVelocity());
+    }
+    
+    public void testInit()
+    {
+    	motor1.set(MaxRPM);
     }
     
     /**
