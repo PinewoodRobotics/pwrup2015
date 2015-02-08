@@ -295,6 +295,12 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     		motor2speed /= biggestValue;
     		motor3speed /= biggestValue;
     	}
+    	
+    	double throttle = (driver.getThrottle() + 1) / 2;
+    	
+    	motor1speed = motor1speed * throttle;
+    	motor2speed = motor2speed * throttle;
+    	motor3speed = motor3speed * throttle;
     		
     	motor1.set(motor1speed * -1.0);
     	motor2.set(motor2speed);
