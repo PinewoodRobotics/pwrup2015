@@ -329,7 +329,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     /**
      * This function is called periodically during test mode
      */
-    public void testPeriodic() 
+    public void testPeriodic2() 
     {
     	double throttle = driver.getThrottle();
     	
@@ -357,6 +357,28 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	printSensorValues();
     	//Timer.delay(0.5);
     	
+    }
+    
+    public void testPeriodic()
+    {
+    	motor1.set(1);
+    	motor2.set(1);
+    	motor3.set(1);
+    	Timer.delay(0.5);
+    	System.out.println("MAX: " + motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
+    	motor1.set(0);
+    	motor2.set(0);
+    	motor3.set(0);
+    	Timer.delay(0.5);
+    	motor1.set(-1);
+    	motor2.set(-1);
+    	motor3.set(-1);
+    	Timer.delay(0.5);
+    	System.out.println("MIN: " + motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());     	
+    	motor1.set(0);
+    	motor2.set(0);
+    	motor3.set(0);
+    	Timer.delay(0.5);
     }
     
     /**
