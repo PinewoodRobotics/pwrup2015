@@ -241,11 +241,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	{
 	    		if( V < 0.0)
 	    		{
-	    			V = m1 * (V - JoyKneeTwoX_) - JoyKneeTwoY_;	// maneuverable speed
+	    			V = m1 * (V + JoyKneeTwoX_) - JoyKneeTwoY_;
 	    		}
 	    		else
 	    		{
-	    			V = m1 * (V - JoyKneeTwoX_) + JoyKneeTwoY_;	// maneuverable speed
+	    			V = m1 * (V - JoyKneeTwoX_) + JoyKneeTwoY_;
 	    		}
 	    	}
 	    	else
@@ -254,11 +254,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	            {
 	                if(V < 0.0)
 	                {
-	                    V = m2 * (V - JoyMaxRange_) - JoyMaxRange_;  // fast speed
+	                    V = m2 * (V + JoyMaxRange_) - JoyMaxRange_;  // changes raw negative input into a fast speed
 	                } 
 	                else
 	                {
-	                	V = m2 * (V - JoyMaxRange_) + JoyMaxRange_;  // fast speed
+	                	V = m2 * (V - JoyMaxRange_) + JoyMaxRange_;  // changes raw positive input into a fast speed
 	                }
 	            }
 	    	}
