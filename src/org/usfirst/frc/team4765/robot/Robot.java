@@ -43,6 +43,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	public static Talon tower1 = new Talon(8);
 	public static Talon tower2 = new Talon(9); // motors for the chain
 	
+	JoystickButton trigger = new JoystickButton(driver, 1);
 	JoystickButton refreshPrefs = new JoystickButton(driver, 8);
 	JoystickButton run  = new JoystickButton(driver, 11);
 	JoystickButton step = new JoystickButton(driver, 12);
@@ -74,6 +75,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     int CANTimeouts;
     
     public static boolean prevRefreshPressed = false;
+    public static boolean lastTrigger = false;
     
     public void CANTimeout()
     {
@@ -362,9 +364,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
-     * This function is called periodically during test mode
+     * Test function for tweaking the towers
      */
-    public void testPeriodic2() 
+    public void testPeriodic4() 
     {
     	double throttle = driver.getThrottle();
     	
@@ -393,6 +395,45 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	//Timer.delay(0.5);
     }
     
+    static boolean lastTower1 = true;
+    static boolean lastTower2 = true;
+    /**
+     * with the press of the trigger the tower moves the chain until it hits the edge of the hall effect sensor
+     */
+    public void testPeriodic()
+    {
+    	boolean readHallEffect1 = hallEffect1.get();
+    	boolean readHallEffect2 = hallEffect2.get();
+    	boolean triggerPressed = trigger.get();
+    	double  throttle = driver.getThrottle();
+    	
+    	if(throttle > 0.5)
+    		throttle = 0.5;
+    	
+    	if(triggerPressed && (lastTrigger == false))
+    	{
+    		tower1.set(0.9 * throttle);
+    		tower2.set(throttle);
+    	}
+    	
+    	if(readHallEffect1 != lastTower1)
+    	{
+    		tower1.set(0);
+    	}
+    	
+    	if(readHallEffect2 != lastTower2)
+    	{
+    		tower2.set(0);
+    	}
+    	
+    	lastTower1 = readHallEffect1;
+    	lastTower2 = readHallEffect2;
+    	lastTrigger = triggerPressed;
+    }
+    
+    /**
+     * runs the motors at max positive and negative speed and prints out the values
+     */
     public void testPeriodic3()
     { 
     	/*
@@ -428,7 +469,10 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	Timer.delay(0.5);
     }
     
-    public void testPeriodic()
+    /**
+     * runs the motor at max speed and prints the value
+     */
+    public void testPeriodic2()
     {
     	SmartDashboard.putNumber("Motor1Speed", motor1.getEncVelocity());
     	System.out.println(motor1.getEncVelocity());
@@ -436,7 +480,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     public void testInit()
     {
-    	motor1.set(MaxRPM);
+    	//motor1.set(MaxRPM);
     }
     
     /**
