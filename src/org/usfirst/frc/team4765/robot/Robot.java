@@ -393,7 +393,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	//Timer.delay(0.5);
     }
     
-    public void testPeriodic()
+    public void testPeriodic3()
     { 
     	/*
     	MAX: 1283       926      867
@@ -426,6 +426,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor2.set(0);
     	motor3.set(0);
     	Timer.delay(0.5);
+    }
+    
+    public void testPeriodic()
+    {
+    	SmartDashboard.putNumber("Motor1Speed", motor1.getEncVelocity());
+    	motor1.set(1);
+    	System.out.println(motor1.getEncVelocity());
     }
     
     /**
