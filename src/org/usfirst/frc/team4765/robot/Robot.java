@@ -43,6 +43,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	public static Talon tower1 = new Talon(8);
 	public static Talon tower2 = new Talon(9); // motors for the chain
 	
+	JoystickButton refreshPrefs = new JoystickButton(driver, 8);
 	JoystickButton run  = new JoystickButton(driver, 11);
 	JoystickButton step = new JoystickButton(driver, 12);
 	
@@ -71,6 +72,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     double[] motorSpeed = new double[4]; //holds motor speeds (in rpm)
     
     int CANTimeouts;
+    
+    public static boolean prevRefreshPressed = false;
     
     public void CANTimeout()
     {
@@ -127,6 +130,10 @@ public class Robot extends IterativeRobot // check the error, this happened afte
             motor1.setPID(P, I, D, F, iZone, Ramp, 0);  //sets PID constants 
             motor2.setPID(P, I, D, F, iZone, Ramp, 0);
             motor3.setPID(P, I, D, F, iZone, Ramp, 0);
+            
+            motor1.changeControlMode(CANTalon.ControlMode.Speed);
+        	motor2.changeControlMode(CANTalon.ControlMode.Speed);
+        	motor3.changeControlMode(CANTalon.ControlMode.Speed);
             
             motor1.enableControl(); //starts feedback ctrl
             motor2.enableControl();
@@ -288,7 +295,17 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      * TODO: implement motor4, motor5 and the mapping for them
      */
     public void teleopPeriodic() 
-    {    	
+    {
+    	boolean refreshPressed = refreshPrefs.get();
+    	
+    	if(refreshPressed && (prevRefreshPressed == false))
+    	{
+    		updatePrefs();
+    	}
+
+    	prevRefreshPressed = refreshPressed;
+
+    	
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
@@ -323,12 +340,15 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor2.set(MaxRPM * motor2speed);
     	motor3.set(MaxRPM * motor3speed);
     	
+
+    	
     	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     	
     	//motor4.set(motor4speed);
     	//motor5.set(motor4speed);
         		
         //myRobot.arcadeDrive(stick);
+    	
     }
     
     /**
