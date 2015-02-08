@@ -79,6 +79,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void robotInit() 
     {
+    	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    	motor3.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    	
+    	
         System.out.println("robotInit()");
     	myRobot = new RobotDrive(0,1);
     	stick = new Joystick(0);
@@ -128,6 +133,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         }
         System.out.println("finished prefs");
     }
+    
+    /**
+     * TODO: print out the encoder values - should be in the CANTalon class
+     * alternateInit - setspeed/velocityreference, setencodertype
+     * need to tell it we are using quadencoder, using speed or position
+     * 
+     */
 
     public void robotInitDummy()
     {
@@ -305,6 +317,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor1.set(motor1speed * -1.0);
     	motor2.set(motor2speed);
     	motor3.set(motor3speed);
+    	
+    	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     	
     	//motor4.set(motor4speed);
     	//motor5.set(motor4speed);
