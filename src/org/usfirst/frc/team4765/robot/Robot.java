@@ -312,26 +312,38 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public void testPeriodic() 
     {
     	double throttle = driver.getThrottle();
+    	
+    	if(throttle > 0.5)
+    		throttle = 0.5;
+    	
     	if(run.get() || (step.get() && halifax1.get()))
     	{
-    		tower1.set(throttle);
+    		tower1.set(0.9 * throttle);
+    	}
+    	else
+    	{
+    		tower1.set(0.0);
     	}
     	
     	if(run.get() || (step.get() && halifax2.get()))
     	{
     		tower2.set(throttle);
     	}
+    	else
+    	{
+    		tower2.set(0.0);
+    	}
 
     	printSensorValues();
-    	Timer.delay(0.5);
+    	//Timer.delay(0.5);
     	
     }
+    
     /**
      * Prints halifax values
      */
     public void printSensorValues()
     {
-    	System.out.println(halifax1.get());
-    	System.out.println(halifax2.get());
+    	System.out.println(halifax1.get() + "                    " + halifax2.get());
     }
 }
