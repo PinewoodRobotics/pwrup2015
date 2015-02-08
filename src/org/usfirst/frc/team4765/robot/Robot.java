@@ -108,13 +108,23 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void updatePrefs()
     {
+    	boolean s = true;
         MaxRPM = prefs.getDouble("MaxRPM", 862.0);
-        P = prefs.getDouble("P", 0.0);   // can change values from here, press button to activate changes
+        P = prefs.getDouble("P", 0.0);   // can change values from here, press button to activate changes        
         I = prefs.getDouble("I", 0.0);
         D = prefs.getDouble("D", 0.0);
         F = prefs.getDouble("F", 1.0);
         iZone = prefs.getInt("iZone", 0);
         Ramp = prefs.getDouble("Ramp", 1200.0);
+        
+        prefs.putDouble("P", P);
+        prefs.putDouble("I", I);
+        prefs.putDouble("D", D);
+        prefs.putDouble("F", F);
+        prefs.putInt("iZone", iZone);
+        prefs.putDouble("Ramp", Ramp);
+        prefs.putBoolean("~S A V E~", s);
+        
         // Profile = prefs.getInt("Profile", 0);
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
