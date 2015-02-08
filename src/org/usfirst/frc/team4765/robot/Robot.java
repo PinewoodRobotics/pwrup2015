@@ -360,7 +360,18 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     public void testPeriodic()
-    {
+    { /*
+    	MAX: 1283     926     867
+    	MIN: -1287     -909     -874
+    	MAX: 1279     927     869
+    	MIN: -1276     -910     -874
+    	MAX: 1272     931     873
+    	MIN: -1268     -915     -874
+    	MAX: 1272     928     872
+    	MIN: -1265     -916     -875
+    	MAX: 1270     928     870
+    	MIN: -1265     -917     -876
+     */
     	motor1.set(1);
     	motor2.set(1);
     	motor3.set(1);
