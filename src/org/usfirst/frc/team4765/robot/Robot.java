@@ -282,8 +282,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         X = mapDrivingValue(X);		// changes the values for easier driving
         R = mapDrivingValue(R);
     	
-    	double motor1speed = X + Y + -0.5 * R; 
-    	double motor2speed = -1.0 * X + Y + 0.5 * R;
+    	double motor1speed = X - Y + -0.5 * R; 
+    	double motor2speed = - X - Y + 0.5 * R;
     	double motor3speed = 0.5 * X + R;
     	//double motor4speed = 0.5 * A;
     	
