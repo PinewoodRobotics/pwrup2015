@@ -117,16 +117,15 @@ public class Tower
 				motor_.set(speedDown_);
 			}
 			break;
-				
+			
+			default:
 			case STOPPED:
 			{
 				motor_.set(0);
 			}
 			break;
-				
-			default:
-				break;
 		}
+		lastHallEffect = hallEffect;
 	}
 	
 	

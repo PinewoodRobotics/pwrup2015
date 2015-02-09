@@ -334,14 +334,14 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	if(raisePressed && (prevRaisePressed == false))
     	{
     		tower1.goUp();
-    		tower2.goDown();
+    		tower2.goUp();
     	}
     	prevRaisePressed = raisePressed;
     	
     	boolean lowerPressed = lower.get();
     	if(lowerPressed && (prevLowerPressed == false))
     	{
-    		tower1.goUp();
+    		tower1.goDown();
     		tower2.goDown();
     	}
     	prevLowerPressed = lowerPressed;
