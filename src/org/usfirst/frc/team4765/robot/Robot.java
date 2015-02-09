@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4765.robot;
 
-import edu.wpi.first.wpilibj.CANTalon.ControlMode;
+
+//import edu.wpi.first.wpilibj.CANTalon.ControlMode;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -9,7 +10,7 @@ import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+//import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.can.*;
@@ -40,16 +41,23 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	
 	// tower drivers for chain are regular Talons
 	 
-	public static Talon tower1 = new Talon(8);
-	public static Talon tower2 = new Talon(9); // motors for the chain
+	public static Talon talon1 = new Talon(8);
+	public static Talon talon2 = new Talon(9); // motors for the chain
 	
 	JoystickButton trigger = new JoystickButton(driver, 1);
 	JoystickButton refreshPrefs = new JoystickButton(driver, 8);
 	JoystickButton run  = new JoystickButton(driver, 11);
 	JoystickButton step = new JoystickButton(driver, 12);
+	JoystickButton raise = new JoystickButton(driver, 6);
+	JoystickButton lower = new JoystickButton(driver, 4);
 	
-	DigitalInput hallEffect1 = new DigitalInput(8);
-	DigitalInput hallEffect2 = new DigitalInput(9);
+	static DigitalInput heightLimit = new DigitalInput(7);
+	static DigitalInput hallEffect1 = new DigitalInput(8);
+	static DigitalInput hallEffect2 = new DigitalInput(9);
+	
+	
+	public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit);
+	public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit);
 	
 	public final static double DeadZone     = 0.05;
 	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
@@ -76,6 +84,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     public static boolean prevRefreshPressed = false;
     public static boolean lastTrigger = false;
+    public static boolean prevRaisePressed = false;
+    public static boolean prevLowerPressed = false;
     
     public void CANTimeout()
     {
@@ -89,10 +99,15 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void robotInit() 
     {
+    	tower1.stop();
+    	tower2.stop();
+    	
     	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor3.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    	
     	updatePrefs();
+    	
     	System.out.println("### GOT EM' COACH  ###");
     }    
     
@@ -309,14 +324,30 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public void teleopPeriodic() 
     {
     	boolean refreshPressed = refreshPrefs.get();
-    	
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
     	}
-
     	prevRefreshPressed = refreshPressed;
-
+    	
+    	boolean raisePressed = raise.get();
+    	if(raisePressed && (prevRaisePressed == false))
+    	{
+    		tower1.goUp();
+    		tower2.goDown();
+    	}
+    	prevRaisePressed = raisePressed;
+    	
+    	boolean lowerPressed = lower.get();
+    	if(lowerPressed && (prevLowerPressed == false))
+    	{
+    		tower1.goUp();
+    		tower2.goDown();
+    	}
+    	prevLowerPressed = lowerPressed;
+    	
+    	tower1.periodic();
+    	tower2.periodic();
     	
     	double Y = driver.getY();
     	double X = driver.getX();
@@ -375,20 +406,20 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	
     	if(run.get() || (step.get() && hallEffect1.get()))
     	{
-    		tower1.set(0.9 * throttle);
+    		talon1.set(0.9 * throttle);
     	}
     	else
     	{
-    		tower1.set(0.0);
+    		talon1.set(0.0);
     	}
     	
     	if(run.get() || (step.get() && hallEffect2.get()))
     	{
-    		tower2.set(throttle);
+    		talon2.set(throttle);
     	}
     	else
     	{
-    		tower2.set(0.0);
+    		talon2.set(0.0);
     	}
 
     	printSensorValues();
@@ -412,18 +443,18 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	
     	if(triggerPressed && (lastTrigger == false))
     	{
-    		tower1.set(0.9 * throttle);
-    		tower2.set(throttle);
+    		talon1.set(0.9 * throttle);
+    		talon2.set(throttle);
     	}
     	
     	if(readHallEffect1 != lastTower1)
     	{
-    		tower1.set(0);
+    		talon1.set(0);
     	}
     	
     	if(readHallEffect2 != lastTower2)
     	{
-    		tower2.set(0);
+    		talon2.set(0);
     	}
     	
     	lastTower1 = readHallEffect1;
