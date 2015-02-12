@@ -323,6 +323,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	boolean raisePressed = raise.get();				// reads button values
     	boolean lowerPressed = lower.get();
 
+    	//printSensorValues();
+
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
@@ -383,7 +385,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     /**
      * Test function for tweaking the towers.
      */
-    public void testPeriodic4() 
+    public void testPeriodic1() 
     {
     	double throttle = driver.getThrottle();
     	
@@ -418,7 +420,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      * With the press of the trigger, the tower moves the chain until it hits the edge of the hall effect sensor.
      * outdated now
      */
-    public void testPeriodic()
+    public void testPeriodi4()
+    
     {
     	boolean readHallEffect1 = hallEffect1.get();
     	boolean readHallEffect2 = hallEffect2.get();
