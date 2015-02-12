@@ -3,6 +3,13 @@ package org.usfirst.frc.team4765.robot;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Talon;
 
+/**
+ * @author Pavel Khokhlov
+ * @author Dean Reece
+ * 
+ * @version 11 February 2015
+ */
+
 public class Tower 
 {
 	public enum ElevationState
@@ -30,7 +37,7 @@ public class Tower
 	public final double speedUp_ = 1;
 	public final double speedDown_ = - 0.35;
 	
-	public ElevationState elevationState_ = ElevationState.FLOOR;
+	public ElevationState elevationState_ = ElevationState.FLOOR;	// going to be used for dashboard feedback
 	public State state_ = State.STOPPED;
 	
 	public Talon motor_;
@@ -75,12 +82,11 @@ public class Tower
 		{
 			case RUNUP:
 			{
-				if(heightLimit == false)
+				if(heightLimit == false)	// false means we have reached the limit
 				{
 					state_ = State.STOPPED;
 				}
-				
-				if(hallEffect != lastHallEffect)
+				else if(hallEffect != lastHallEffect)
 				{
 					state_ = State.STOPPED;
 					
@@ -93,8 +99,10 @@ public class Tower
 						elevationState_ = ElevationState.PLATFORM;
 					}
 				}
-				
-				motor_.set(speedUp_);
+				else
+				{
+					motor_.set(speedUp_);
+				}
 			}
 			break;
 				
@@ -113,8 +121,10 @@ public class Tower
 						elevationState_ = ElevationState.PLATFORM;
 					}
 				}
-				
-				motor_.set(speedDown_);
+				else
+				{
+					motor_.set(speedDown_);
+				}
 			}
 			break;
 			
@@ -125,6 +135,7 @@ public class Tower
 			}
 			break;
 		}
+		
 		lastHallEffect = hallEffect;
 	}
 	

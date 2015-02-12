@@ -1,16 +1,12 @@
 package org.usfirst.frc.team4765.robot;
 
-
-//import edu.wpi.first.wpilibj.CANTalon.ControlMode;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
-//import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.can.*;
@@ -26,35 +22,35 @@ import edu.wpi.first.wpilibj.can.*;
 
 /* WPILibJ doc: <http://first.wpi.edu/FRC/roborio/release/docs/java/index.html> */
 
+/**
+ * @author Pavel Khokhlov
+ * @author Dean Reece
+ * 
+ * @version 11 February 2015
+ */
+
 public class Robot extends IterativeRobot // check the error, this happened after our late night drawing trouble shooting
 {
-	RobotDrive myRobot;
-	Joystick stick;
 	int autoLoopCounter;
-	
-	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
-	//public static Joystick operator = new Joystick(6); // joystick that controls the chain movement
-	
+
 	public static CANTalon motor1 = new CANTalon(1); 
-	public static CANTalon motor2 = new CANTalon(2);
-	public static CANTalon motor3 = new CANTalon(3); // motors for driving
-	
-	// tower drivers for chain are regular Talons
+	public static CANTalon motor2 = new CANTalon(2); // motors for driving
+	public static CANTalon motor3 = new CANTalon(3); 
 	 
 	public static Talon talon1 = new Talon(8);
 	public static Talon talon2 = new Talon(9); // motors for the chain
 	
+	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
 	JoystickButton trigger = new JoystickButton(driver, 1);
 	JoystickButton refreshPrefs = new JoystickButton(driver, 8);
 	JoystickButton run  = new JoystickButton(driver, 11);
-	JoystickButton step = new JoystickButton(driver, 12);
+	JoystickButton step = new JoystickButton(driver, 12);		//joystick values
 	JoystickButton raise = new JoystickButton(driver, 6);
 	JoystickButton lower = new JoystickButton(driver, 4);
 	
 	static DigitalInput heightLimit = new DigitalInput(7);
 	static DigitalInput hallEffect1 = new DigitalInput(8);
 	static DigitalInput hallEffect2 = new DigitalInput(9);
-	
 	
 	public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit);
 	public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit);
@@ -68,8 +64,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     Preferences prefs = Preferences.getInstance();
 
-    double P;
-    double I;
+    double P;				// PID loop values
+    double I;				
     double D;
     double F;
     int    iZone; 			// i-zone that gives I a limit to cumulation
@@ -83,9 +79,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     int CANTimeouts;
     
     public static boolean prevRefreshPressed = false;
-    public static boolean lastTrigger = false;
-    public static boolean prevRaisePressed = false;
-    public static boolean prevLowerPressed = false;
+    public static boolean lastTrigger        = false;
+    public static boolean prevRaisePressed   = false;
+    public static boolean prevLowerPressed   = false;
     
     public void CANTimeout()
     {
@@ -94,8 +90,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
 	
     /**
-     * This function is run when the robot is first started up and should be
-     * used for any initialization code.
+     * This function is run when the robot is first started up and should be used for any initialization code.
+     * TODO: implement a timeout exception handler
      */
     public void robotInit() 
     {
@@ -120,8 +116,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
 
     
-    /*
-     * Smartdashboard controls
+    /**
+     * Prints PID values on the smardashboard.
+     * 
      */
     public void updatePrefs()
     {
@@ -140,9 +137,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         prefs.putDouble("F", F);
         prefs.putInt("iZone", iZone);
         prefs.putDouble("Ramp", Ramp);
-        //prefs.putBoolean("~S A V E~", s);
-        
-        // Profile = prefs.getInt("Profile", 0);
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("CANTalon I", I);
@@ -177,7 +171,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      * TODO: print out the encoder values - should be in the CANTalon class
      * alternateInit - setspeed/velocityreference, setencodertype
      * need to tell it we are using quadencoder, using speed or position
-     * 
+     * TODO: useless now, delete
      */
 
     public void robotInitDummy()
@@ -252,10 +246,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
    
     /**
-     * This function is called periodically during autonomous
+     * This function is called periodically during autonomous.
      */
     public void autonomousPeriodic() 
     {
+    	/*
     	if(autoLoopCounter < 100) //Check if we've completed 100 loops (approximately 2 seconds)
 		{
 			myRobot.drive(-0.5, 0.0); 	// drive forwards half speed
@@ -263,10 +258,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 			} else {
 			myRobot.drive(0.0, 0.0); 	// stop robot
 		}
+		*/
     }
     
     /**
-     * This function is called once each time the robot enters tele-operated mode
+     * This function is called once each time the robot enters tele-operated mode.
      */
     public void teleopInit()
     {
@@ -318,27 +314,28 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
-     * This function is called periodically during operator control
-     * TODO: implement motor4, motor5 and the mapping for them
+     * This function is called periodically during operator control.
+     * This funciton is responsible for the driving and the chain mechanism.
      */
     public void teleopPeriodic() 
     {
     	boolean refreshPressed = refreshPrefs.get();
+    	boolean raisePressed = raise.get();				// reads button values
+    	boolean lowerPressed = lower.get();
+
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
     	}
     	prevRefreshPressed = refreshPressed;
-    	
-    	boolean raisePressed = raise.get();
+
     	if(raisePressed && (prevRaisePressed == false))
     	{
     		tower1.goUp();
     		tower2.goUp();
     	}
     	prevRaisePressed = raisePressed;
-    	
-    	boolean lowerPressed = lower.get();
+
     	if(lowerPressed && (prevLowerPressed == false))
     	{
     		tower1.goDown();
@@ -352,8 +349,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
-    	
-    	//double A = operator.getY();
 
         Y = mapDrivingValue(Y);
         X = mapDrivingValue(X);		// changes the values for easier driving
@@ -362,7 +357,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	double motor1speed = X - Y + -0.5 * R; 
     	double motor2speed = - X - Y + 0.5 * R;
     	double motor3speed = 0.5 * X + R;
-    	//double motor4speed = 0.5 * A;
     	
     	double biggestValue = Math.max(motor1speed, Math.max(motor2speed, motor3speed));
     	
@@ -380,22 +374,14 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor3speed = motor3speed * throttle;
     		
     	motor1.set(MaxRPM * motor1speed * -1.0);
-    	motor2.set(MaxRPM * motor2speed);
+    	motor2.set(MaxRPM * motor2speed);				// has to be in velocity mode
     	motor3.set(MaxRPM * motor3speed);
     	
-
-    	
     	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
-    	
-    	//motor4.set(motor4speed);
-    	//motor5.set(motor4speed);
-        		
-        //myRobot.arcadeDrive(stick);
-    	
     }
     
     /**
-     * Test function for tweaking the towers
+     * Test function for tweaking the towers.
      */
     public void testPeriodic4() 
     {
@@ -429,7 +415,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     static boolean lastTower1 = true;
     static boolean lastTower2 = true;
     /**
-     * with the press of the trigger the tower moves the chain until it hits the edge of the hall effect sensor
+     * With the press of the trigger, the tower moves the chain until it hits the edge of the hall effect sensor.
+     * outdated now
      */
     public void testPeriodic()
     {
@@ -463,7 +450,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
-     * runs the motors at max positive and negative speed and prints out the values
+     * Runs the motors at max positive and negative speed and prints out the values.
      */
     public void testPeriodic3()
     { 
@@ -501,7 +488,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
-     * runs the motor at max speed and prints the value
+     * Runs the motor at max speed and prints the value.
+     * Used for tweaking PID values.
      */
     public void testPeriodic2()
     {
@@ -515,7 +503,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
-     * Prints halifax values
+     * Prints halifax values.
      */
     public void printSensorValues()
     {
