@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj.can.*;
  * @author Pavel Khokhlov
  * @author Dean Reece
  * 
- * @version 11 February 2015
+ * @version 12 February 2015
  */
 
 public class Robot extends IterativeRobot // check the error, this happened after our late night drawing trouble shooting
