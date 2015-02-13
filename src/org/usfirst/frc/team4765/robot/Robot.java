@@ -517,6 +517,17 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	System.out.println(motor1.getEncVelocity());
     }
     
+    /**
+     * Function runs the tower talons and prints the boolean of the halleffect to the smartdashboard.
+     */
+    public void testPeriodic()
+    {
+    	talon1.set(0.35);
+    	talon2.set(0.35);
+    	SmartDashboard.putBoolean("HallEffect1", hallEffect1.get());
+    	SmartDashboard.putBoolean("HallEffect2", hallEffect2.get());
+    }
+    
     public void testInit()
     {
     	//motor1.set(MaxRPM);
