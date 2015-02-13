@@ -36,7 +36,7 @@ public class Tower
 	 * 	
 	 * 
 	 */
-	public final double speedUp_ = 0.65;
+	public final double speedUp_ = 0.4;
 	public final double speedDown_ = - 0.35;
 	
 	//public ElevationState elevationState_ = ElevationState.FLOOR;	// going to be used for dashboard feedback
@@ -63,19 +63,19 @@ public class Tower
 	public void goUp(boolean elevationTarget)
 	{
 		elevationTarget_ = elevationTarget;
-		state_ = State.RUNUP;
+		enterState(State.RUNUP);
 	}
 	
 	
 	public void goDown(boolean elevationTarget)
 	{
 		elevationTarget_ = elevationTarget;
-		state_ = State.RUNDOWN;
+		enterState(State.RUNDOWN);
 	}
 	
 	public void stop()
 	{
-		state_ = State.STOPPED;
+		enterState(State.STOPPED);
 	}
 	
 	public void goUpLevel()
@@ -92,9 +92,46 @@ public class Tower
 	{
 		return state_;
 	}
+	
+	
 	/**
 	 * all logic for state machine is here
 	 */
+	
+	void enterState(State newState)
+	{
+		state_= newState;
+		switch(newState)
+		{
+			case RUNUP:
+			{
+				motor_.set(speedUp_);
+			}
+			break;
+				
+			case RUNDOWN:
+			{
+				motor_.set(speedDown_);
+			}
+			break;
+			
+			case RUNUPDELAY:
+			{
+				timer_.reset();
+				timer_.start();
+				motor_.set(speedUp_);
+			}
+			break;
+			
+			default:
+			case STOPPED:
+			{
+				motor_.set(0);
+			}
+			break;
+		}
+	}
+	
 	public void periodic()
 	{
 		boolean hallEffect = !hallEffect_.get();		// true = magnet is detected
@@ -106,12 +143,12 @@ public class Tower
 			{
 				if(heightLimit == true)	// false means we have reached the limit
 				{
-					state_ = State.STOPPED;
+					enterState(State.STOPPED);
 				}
-				else if((hallEffect != lastHallEffect) && (hallEffect == elevationTarget_))
+				else if(hallEffect == elevationTarget_)
 				{
-					state_ = State.STOPPED;
 					elevationState_ = hallEffect;
+					enterState(State.STOPPED);
 				}
 				else
 				{
@@ -122,16 +159,10 @@ public class Tower
 				
 			case RUNDOWN:
 			{
-				if((hallEffect != lastHallEffect) && (hallEffect != elevationTarget_))
+				if(hallEffect != elevationTarget_)
 				{
-					timer_.reset();
-					timer_.start();
-					state_ = State.RUNUPDELAY;
 					elevationState_ = !hallEffect;
-				}
-				else
-				{
-					motor_.set(speedDown_);
+					enterState(State.STOPPED);
 				}
 			}
 			break;
@@ -139,8 +170,9 @@ public class Tower
 			case RUNUPDELAY:
 			{
 				if(timer_.get() > 0.1)
-					state_ = State.RUNUP;
+					enterState(State.STOPPED);
 			}
+			break;
 			
 			default:
 			case STOPPED:
