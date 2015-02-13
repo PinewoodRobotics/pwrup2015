@@ -83,6 +83,15 @@ public class Tower
 		
 	}
 	
+	public boolean getElevaitonState()
+	{
+		return elevationState_;
+	}
+	
+	public State getState()
+	{
+		return state_;
+	}
 	/**
 	 * all logic for state machine is here
 	 */

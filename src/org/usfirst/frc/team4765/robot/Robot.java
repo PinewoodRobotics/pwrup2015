@@ -318,15 +318,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     /**
      * This function is called periodically during operator control.
-     * This funciton is responsible for the driving and the chain mechanism.
+     * This function is responsible for the driving and the chain mechanism.
      */
     public void teleopPeriodic() 
     {
     	boolean refreshPressed = refreshPrefs.get();
-    	
-    	
-
-    	//printSensorValues();
 
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
@@ -357,8 +353,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	prevLowerPressed = lowerPressed;
     	}
     	
-    	tower1.periodic();
-    	tower2.periodic();
+    	periodic();
     	
     	double Y = driver.getY();
     	double X = driver.getX();
@@ -390,7 +385,17 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor1.set(MaxRPM * motor1speed * -1.0);
     	motor2.set(MaxRPM * motor2speed);				// has to be in velocity mode
     	motor3.set(MaxRPM * motor3speed);
-    	
+    }
+    
+    /**
+     * Launched in every periodic function. 
+     */
+    public void periodic()
+    {
+    	tower1.periodic();
+    	tower2.periodic();
+    	SmartDashboard.putBoolean("Elevation State1", tower1.getElevaitonState());
+    	SmartDashboard.putBoolean("Elevation State2", tower2.getElevaitonState());
     	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
     
