@@ -2,6 +2,7 @@ package org.usfirst.frc.team4765.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * @author Pavel Khokhlov
@@ -20,7 +21,7 @@ public class Tower
 	*/
 	public enum State
 	{
-		RUNUP, RUNDOWN, STOPPED 
+		RUNUP, RUNDOWN, STOPPED, RUNUPDELAY
 	}
 	
 	/**
@@ -48,6 +49,8 @@ public class Tower
 	public boolean lastHallEffect = false;
 	public boolean elevationState_ = true; // true = floor, false = platform - for going up
 	public boolean elevationTarget_ = true;
+	
+	Timer timer_ = new Timer();
 	
 	public Tower(Talon talon, DigitalInput hallEffect, DigitalInput heightLimit)
 	{
@@ -112,7 +115,9 @@ public class Tower
 			{
 				if((hallEffect != lastHallEffect) && (hallEffect != elevationTarget_))
 				{
-					state_ = State.STOPPED;
+					timer_.reset();
+					timer_.start();
+					state_ = State.RUNUPDELAY;
 					elevationState_ = !hallEffect;
 				}
 				else
@@ -121,6 +126,12 @@ public class Tower
 				}
 			}
 			break;
+			
+			case RUNUPDELAY:
+			{
+				if(timer_.get() > 0.1)
+					state_ = State.RUNUP;
+			}
 			
 			default:
 			case STOPPED:
