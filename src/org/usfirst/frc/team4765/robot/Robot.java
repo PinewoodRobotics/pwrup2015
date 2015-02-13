@@ -1,5 +1,7 @@
 package org.usfirst.frc.team4765.robot;
 
+import org.usfirst.frc.team4765.robot.Tower.State;
+
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -82,6 +84,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public static boolean lastTrigger        = false;
     public static boolean prevRaisePressed   = false;
     public static boolean prevLowerPressed   = false;
+    public static boolean elevationTarget_	 = true;
     
     public void CANTimeout()
     {
@@ -320,30 +323,39 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public void teleopPeriodic() 
     {
     	boolean refreshPressed = refreshPrefs.get();
-    	boolean raisePressed = raise.get();				// reads button values
-    	boolean lowerPressed = lower.get();
+    	
+    	
 
     	//printSensorValues();
 
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
+    		tower1.stop();
+    		tower2.stop();
     	}
     	prevRefreshPressed = refreshPressed;
-
-    	if(raisePressed && (prevRaisePressed == false))
+    	
+    	if(tower1.state_ == State.STOPPED)
     	{
-    		tower1.goUp();
-    		tower2.goUp();
+    		boolean raisePressed = raise.get();				// reads button values
+	    	if(raisePressed && (prevRaisePressed == false))
+	    	{
+	    		elevationTarget_ = !elevationTarget_;
+	    		tower1.goUp(elevationTarget_);
+	    		tower2.goUp(elevationTarget_);
+	    	}
+	    	prevRaisePressed = raisePressed;
+	
+	    	boolean lowerPressed = lower.get();
+	    	if(lowerPressed && (prevLowerPressed == false))
+	    	{
+	    		elevationTarget_ = !elevationTarget_;
+	    		tower1.goDown(elevationTarget_);
+	    		tower2.goDown(elevationTarget_);
+	    	}
+	    	prevLowerPressed = lowerPressed;
     	}
-    	prevRaisePressed = raisePressed;
-
-    	if(lowerPressed && (prevLowerPressed == false))
-    	{
-    		tower1.goDown();
-    		tower2.goDown();
-    	}
-    	prevLowerPressed = lowerPressed;
     	
     	tower1.periodic();
     	tower2.periodic();

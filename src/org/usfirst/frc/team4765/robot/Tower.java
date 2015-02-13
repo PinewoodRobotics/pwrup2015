@@ -35,7 +35,7 @@ public class Tower
 	 * 	
 	 * 
 	 */
-	public final double speedUp_ = 1;
+	public final double speedUp_ = 0.65;
 	public final double speedDown_ = - 0.35;
 	
 	//public ElevationState elevationState_ = ElevationState.FLOOR;	// going to be used for dashboard feedback
@@ -47,6 +47,7 @@ public class Tower
 	
 	public boolean lastHallEffect = false;
 	public boolean elevationState_ = true; // true = floor, false = platform - for going up
+	public boolean elevationTarget_ = true;
 	
 	public Tower(Talon talon, DigitalInput hallEffect, DigitalInput heightLimit)
 	{
@@ -56,14 +57,16 @@ public class Tower
 	}
 	
 	
-	public void goUp()
+	public void goUp(boolean elevationTarget)
 	{
+		elevationTarget_ = elevationTarget;
 		state_ = State.RUNUP;
 	}
 	
 	
-	public void goDown()
+	public void goDown(boolean elevationTarget)
 	{
+		elevationTarget_ = elevationTarget;
 		state_ = State.RUNDOWN;
 	}
 	
@@ -93,7 +96,7 @@ public class Tower
 				{
 					state_ = State.STOPPED;
 				}
-				else if((hallEffect != lastHallEffect) && (hallEffect != elevationState_))
+				else if((hallEffect != lastHallEffect) && (hallEffect == elevationTarget_))
 				{
 					state_ = State.STOPPED;
 					elevationState_ = hallEffect;
@@ -107,7 +110,7 @@ public class Tower
 				
 			case RUNDOWN:
 			{
-				if((hallEffect != lastHallEffect) && (hallEffect == elevationState_))
+				if((hallEffect != lastHallEffect) && (hallEffect != elevationTarget_))
 				{
 					state_ = State.STOPPED;
 					elevationState_ = !hallEffect;
