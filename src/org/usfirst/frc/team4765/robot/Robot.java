@@ -396,7 +396,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	tower2.periodic();
     	SmartDashboard.putBoolean("Elevation State1", tower1.getElevaitonState());
     	SmartDashboard.putBoolean("Elevation State2", tower2.getElevaitonState());
-    	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
+    	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
+    	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
+//    	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
     
     /**
@@ -524,8 +526,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     {
     	talon1.set(0.35);
     	talon2.set(0.35);
-    	SmartDashboard.putBoolean("HallEffect1", hallEffect1.get());
-    	SmartDashboard.putBoolean("HallEffect2", hallEffect2.get());
+    	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
+    	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
     }
     
     public void testInit()
