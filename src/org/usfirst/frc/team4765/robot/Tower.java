@@ -21,7 +21,7 @@ public class Tower
 	*/
 	public enum State
 	{
-		RUNUP, RUNDOWN, STOPPED, RUNUPDELAY
+		RUNUP, RUNDOWN, FULL, STOPPED, RUNUPDELAY
 	}
 	
 	/**
@@ -36,9 +36,10 @@ public class Tower
 	 * 	
 	 * 
 	 */
-	public final double speedUp_ = 0.4;
+	public final double speedUp_ = 0.70;
 	public final double speedDown_ = - 0.35;
-	
+	public final double speedFull_ = 0.10;
+
 	//public ElevationState elevationState_ = ElevationState.FLOOR;	// going to be used for dashboard feedback
 	public State state_ = State.STOPPED;
 	
@@ -117,12 +118,20 @@ public class Tower
 			
 			case RUNUPDELAY:
 			{
+				motor_.set(speedDown_/2);
 				timer_.reset();
 				timer_.start();
-				motor_.set(speedUp_);
+				//motor_.set(speedUp_);
 			}
 			break;
 			
+			case FULL:
+			{
+				motor_.set(speedFull_);
+				state_ = State.STOPPED;
+			}
+			break;
+
 			default:
 			case STOPPED:
 			{
@@ -143,9 +152,9 @@ public class Tower
 			{
 				if(heightLimit == true)	// false means we have reached the limit
 				{
-					enterState(State.STOPPED);
+					enterState(State.FULL);
 				}
-				else if(hallEffect == elevationTarget_)
+				else if((lastHallEffect != hallEffect) && (hallEffect == elevationTarget_))
 				{
 					elevationState_ = hallEffect;
 					enterState(State.STOPPED);
@@ -159,25 +168,30 @@ public class Tower
 				
 			case RUNDOWN:
 			{
-				if(hallEffect != elevationTarget_)
+				if((lastHallEffect != hallEffect) && (hallEffect != elevationTarget_))
 				{
 					elevationState_ = !hallEffect;
-					enterState(State.STOPPED);
+					enterState(State.RUNUPDELAY);
 				}
 			}
 			break;
 			
 			case RUNUPDELAY:
 			{
-				if(timer_.get() > 0.1)
-					enterState(State.STOPPED);
+				if(timer_.get() > 0.04)
+					enterState(State.RUNUP);
 			}
 			break;
 			
+			case FULL:
+			{
+				// We stay in this state till we get a goDown() command
+			}
+
 			default:
 			case STOPPED:
 			{
-				motor_.set(0);
+				//motor_.set(0); //just to be sure it stays stopped
 			}
 			break;
 		}
