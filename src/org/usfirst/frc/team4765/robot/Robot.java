@@ -4,11 +4,9 @@ import org.usfirst.frc.team4765.robot.PIDTower;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
-//import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
-//import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
@@ -54,21 +52,16 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton lowerElevation = new JoystickButton(driver, 5); 	// up
 	
 	static DigitalInput heightLimit = new DigitalInput(7);
-	//static DigitalInput hallEffect1 = new DigitalInput(8);
-	//static DigitalInput hallEffect2 = new DigitalInput(9);
-	
-	//public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit, 3, 4);
-	//public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit, 5, 6);
 	
 	public static PIDTower PIDTower1 = new PIDTower(8, 8, 3, 4);
 	public static PIDTower PIDTower2 = new PIDTower(9, 9, 5, 6);
 	
-	public final static double DeadZone     = 0.05;
-	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
-    public final static double JoyKneeTwoX_ = 0.8;        // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
-    public final static double JoyMaxRange_ = 1.0;        // maximum input range of joysticks
-    public final static double JoyKneeOneY_ = 0;		  // starts the first leg of the mapping
-    public final static double JoyKneeTwoY_ = 0.35;		  
+	public static final double DeadZone     = 0.05;
+	public static final double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
+    public static final double JoyKneeTwoX_ = 0.8;        // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
+    public static final double JoyMaxRange_ = 1.0;        // maximum input range of joysticks
+    public static final double JoyKneeOneY_ = 0;		  // starts the first leg of the mapping
+    public static final double JoyKneeTwoY_ = 0.35;		  
     
     Preferences prefs = Preferences.getInstance();
     
@@ -90,13 +83,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     int CANTimeouts;
     
-    public static boolean prevRefreshPressed = false;
-    public static boolean lastTrigger        = false;
-    public static boolean prevRaiseStoryPressed   = false;
-    public static boolean prevLowerStoryPressed   = false;
+    public static boolean prevRefreshPressed        = false;
+    public static boolean lastTrigger               = false;
+    public static boolean prevRaiseStoryPressed     = false;
+    public static boolean prevLowerStoryPressed     = false;
     public static boolean prevRaiseElevationPressed = false;
     public static boolean prevLowerElevationPressed = false;
-    public static boolean elevationTarget_	 = true;
+    public static boolean elevationTarget_ = true;
     
     public void CANTimeout()
     {
@@ -110,9 +103,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void robotInit() 
     {
-    	//tower1.stop();
-    	//tower2.stop();
-    	
     	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor3.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
@@ -376,89 +366,10 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	PIDTower2.periodic();
     	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
     	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
-    	/*SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
-    	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
-    	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
-    	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);*/
     	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
     	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
        // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
-    
-    /**
-     * Test function for tweaking the towers.
-     */
-    /*
-    public void testPeriodic1() 
-    {
-    	double throttle = driver.getThrottle();
-    	
-    	if(throttle > 0.5)
-    		throttle = 0.5;
-    	
-    	if(run.get() || (step.get() && hallEffect1.get()))
-    	{
-    		talon1.set(0.9 * throttle);
-    	}
-    	else
-    	{
-    		talon1.set(0.0);
-    	}
-    	
-    	if(run.get() || (step.get() && hallEffect2.get()))
-    	{
-    		talon2.set(throttle);
-    	}
-    	else
-    	{
-    		talon2.set(0.0);
-    	}
-
-    	printSensorValues();
-    	//Timer.delay(0.5);
-    }
-    */
-    
-    static boolean lastTower1 = true;
-    static boolean lastTower2 = true;
-    /**
-     * With the press of the trigger, the tower moves the chain until it hits the edge of the hall effect sensor.
-     * outdated now
-     */
-    
-    /*
-    public void testPeriodi4()
-    
-    {
-    	boolean readHallEffect1 = hallEffect1.get();
-    	boolean readHallEffect2 = hallEffect2.get();
-    	boolean triggerPressed = trigger.get();
-    	double  throttle = driver.getThrottle();
-    	
-    	if(throttle > 0.5)
-    		throttle = 0.5;
-    	
-    	if(triggerPressed && (lastTrigger == false))
-    	{
-    		talon1.set(0.9 * throttle);
-    		talon2.set(throttle);
-    	}
-    	
-    	if(readHallEffect1 != lastTower1)
-    	{
-    		talon1.set(0);
-    	}
-    	
-    	if(readHallEffect2 != lastTower2)
-    	{
-    		talon2.set(0);
-    	}
-    	
-    	lastTower1 = readHallEffect1;
-    	lastTower2 = readHallEffect2;
-    	lastTrigger = triggerPressed;
-    }
-    */
     
     /**
      * Runs the motors at max positive and negative speed and prints out the values.
@@ -507,17 +418,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	SmartDashboard.putNumber("Motor1Speed", motor1.getEncVelocity());
     	System.out.println(motor1.getEncVelocity());
     }
-    
-    /**
-     * Function runs the tower talons and prints the boolean of the halleffect to the smartdashboard.
-     */
-    /*
-    public void testPeriodic()
-    {
-    	talon1.set(0.35);
-    	talon2.set(0.35);
-    }
-    */
     
     public void testInit()
     {

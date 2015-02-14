@@ -60,6 +60,8 @@ public class PIDTower
 		{
 			controller_.setSetpoint(controller_.getSetpoint() - elevationDiff);
 		}
+		
+		elevationState_ = elevation;
 	}
 	
 	public void goUpStory()
