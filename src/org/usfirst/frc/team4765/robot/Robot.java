@@ -4,6 +4,7 @@ import org.usfirst.frc.team4765.robot.Tower.State;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
@@ -54,8 +55,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	static DigitalInput hallEffect1 = new DigitalInput(8);
 	static DigitalInput hallEffect2 = new DigitalInput(9);
 	
-	public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit);
-	public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit);
+	public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit, 3, 4);
+	public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit, 5, 6);
 	
 	public final static double DeadZone     = 0.05;
 	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
@@ -528,6 +529,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	talon2.set(0.35);
     	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
     	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
+    	SmartDashboard.putNumber("Tower Encoder 1", tower1.encoder_.getRaw());
+    	SmartDashboard.putNumber("Tower Encoder 2", tower2.encoder_.getRaw());
     }
     
     public void testInit()

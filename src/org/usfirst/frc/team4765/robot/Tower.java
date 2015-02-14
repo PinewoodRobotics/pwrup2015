@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4765.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -47,17 +48,21 @@ public class Tower
 	public DigitalInput hallEffect_;
 	public DigitalInput heightLimit_;
 	
+	public Encoder encoder_;
+	
 	public boolean lastHallEffect = false;
 	public boolean elevationState_ = true; // true = floor, false = platform - for going up
 	public boolean elevationTarget_ = true;
 	
 	Timer timer_ = new Timer();
 	
-	public Tower(Talon talon, DigitalInput hallEffect, DigitalInput heightLimit)
+	public Tower(Talon talon, DigitalInput hallEffect, DigitalInput heightLimit, int QA, int QB)
 	{
 		motor_ = talon;
 		hallEffect_ = hallEffect;
 		heightLimit_ = heightLimit;
+		encoder_ = new Encoder(QA, QB, false);
+		encoder_.reset();
 	}
 	
 	
@@ -98,7 +103,6 @@ public class Tower
 	/**
 	 * all logic for state machine is here
 	 */
-	
 	void enterState(State newState)
 	{
 		state_= newState;
