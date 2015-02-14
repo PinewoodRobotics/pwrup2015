@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj.can.*;
  * @author Pavel Khokhlov
  * @author Dean Reece
  * 
- * @version 12 February 2015
+ * @version 14 February 2015
  */
 
 public class Robot extends IterativeRobot // check the error, this happened after our late night drawing trouble shooting
@@ -48,15 +48,20 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton refreshPrefs = new JoystickButton(driver, 8);
 	JoystickButton run  = new JoystickButton(driver, 11);
 	JoystickButton step = new JoystickButton(driver, 12);		//joystick values
-	JoystickButton raise = new JoystickButton(driver, 6);
-	JoystickButton lower = new JoystickButton(driver, 4);
+	JoystickButton raiseStory = new JoystickButton(driver, 6);
+	JoystickButton lowerStory = new JoystickButton(driver, 4);
+	JoystickButton raiseElevation = new JoystickButton(driver, 3);	// down
+	JoystickButton lowerElevation = new JoystickButton(driver, 5); 	// up
 	
 	static DigitalInput heightLimit = new DigitalInput(7);
 	static DigitalInput hallEffect1 = new DigitalInput(8);
 	static DigitalInput hallEffect2 = new DigitalInput(9);
 	
-	public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit, 3, 4);
-	public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit, 5, 6);
+	//public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit, 3, 4);
+	//public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit, 5, 6);
+	
+	public static PIDTower PIDTower1 = new PIDTower(8, 8, 3, 4);
+	public static PIDTower PIDTower2 = new PIDTower(9, 9, 5, 6);
 	
 	public final static double DeadZone     = 0.05;
 	public final static double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
@@ -66,7 +71,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public final static double JoyKneeTwoY_ = 0.35;		  
     
     Preferences prefs = Preferences.getInstance();
-
+    
+    double TowerP;
+    double TowerI;
+    double TowerD;
+    
     double P;				// PID loop values
     double I;				
     double D;
@@ -83,8 +92,10 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     public static boolean prevRefreshPressed = false;
     public static boolean lastTrigger        = false;
-    public static boolean prevRaisePressed   = false;
-    public static boolean prevLowerPressed   = false;
+    public static boolean prevRaiseStoryPressed   = false;
+    public static boolean prevLowerStoryPressed   = false;
+    public static boolean prevRaiseElevationPressed = false;
+    public static boolean prevLowerElevationPressed = false;
     public static boolean elevationTarget_	 = true;
     
     public void CANTimeout()
@@ -99,8 +110,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void robotInit() 
     {
-    	tower1.stop();
-    	tower2.stop();
+    	//tower1.stop();
+    	//tower2.stop();
     	
     	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
@@ -121,7 +132,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 
     
     /**
-     * Prints PID values on the smardashboard.
+     * Prints and sets PID values on the smardashboard for CANTalons and PIDTowers.
      * 
      */
     public void updatePrefs()
@@ -150,6 +161,20 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         SmartDashboard.putNumber("CANTalon Ramp", Ramp);
         SmartDashboard.putNumber("MaxRPM", MaxRPM);
         
+        // PIDTOWER
+        
+        TowerP = prefs.getDouble("TowerP", 0.001);   // can change values from here, press button to activate changes        
+        TowerI = prefs.getDouble("TowerI", 0.0);
+        TowerD = prefs.getDouble("TowerD", 0.0);
+        
+        prefs.putDouble("TowerP", TowerP);
+        prefs.putDouble("TowerI", TowerI);
+        prefs.putDouble("TowerD", TowerD);
+        
+		SmartDashboard.putNumber("PIDTower P", TowerP);
+		SmartDashboard.putNumber("PIDTower I", TowerI);
+		SmartDashboard.putNumber("PIDTower D", TowerD);
+        
         try
         {
             motor1.setPID(P, I, D, F, iZone, Ramp, 0);  //sets PID constants 
@@ -163,82 +188,19 @@ public class Robot extends IterativeRobot // check the error, this happened afte
             motor1.enableControl(); //starts feedback ctrl
             motor2.enableControl();
             motor3.enableControl();
+            
+            PIDTower1.controller_.setPID(TowerP, TowerI, TowerD);
+            PIDTower2.controller_.setPID(TowerP, TowerI, TowerD);
+            
+            PIDTower1.controller_.enable();
+            PIDTower2.controller_.enable();
+            
         } 
         catch (CANInvalidBufferException ex)
         {
             CANTimeout();
         }
-        System.out.println("finished prefs");
-    }
-    
-    /**
-     * TODO: print out the encoder values - should be in the CANTalon class
-     * alternateInit - setspeed/velocityreference, setencodertype
-     * need to tell it we are using quadencoder, using speed or position
-     * TODO: useless now, delete
-     */
-
-    public void robotInitDummy()
-    {
-        SmartDashboard.putNumber("CAN timeouts", CANTimeouts);
-        boolean CANInit = false;
-        CANTimeouts = 0;
-        while (CANInit == false)
-        {
-            try
-            {
-				// m_telePeriodicLoops = 0;                 // Reset the number of loops in current second
-            	// m_dsPacketsReceivedInCurrentSecond = 0;  // Reset the number of dsPackets in current second
-            	
-            	motor1 = new CANTalon(1);
-            	motor2 = new CANTalon(2);
-            	motor3 = new CANTalon(3);
-            	
-            	motor1.changeControlMode(CANTalon.ControlMode.Speed);
-            	motor2.changeControlMode(CANTalon.ControlMode.Speed);
-            	motor3.changeControlMode(CANTalon.ControlMode.Speed);
-            	
-            	motor1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-            	motor2.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-            	motor3.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-            	
-            	motor1.setVoltageRampRate(15); // TODO: put the correct voltage
-            	motor2.setVoltageRampRate(15); // TODO: put the correct voltage
-            	motor3.setVoltageRampRate(15); // TODO: put the correct voltage
-            	
-            	//motor1. // TODO: configure degrees per second
-            	
-            	
-                
-                //motor1.setSpeedReference(CANJaguar.SpeedReference.kQuadEncoder);    //chooses which kind of encoder to determine speed feedback
-                //motor2.setSpeedReference(CANJaguar.SpeedReference.kQuadEncoder);
-                //motor3.setSpeedReference(CANJaguar.SpeedReference.kQuadEncoder);
-                //motor1.setVoltageRampRate(15); 
-                //motor2.setVoltageRampRate(15);
-                //motor3.setVoltageRampRate(15);
-                //motor1.configEncoderCodesPerRev(256);   //counts pulses per revolution
-                //motor2.configEncoderCodesPerRev(256);
-                //motor3.configEncoderCodesPerRev(256);
-                //StartPosition = motor1.getPosition();
-            	            	
-                updatePrefs(); // TODO: set P, I, D, F
-                                
-                motor1.set(0);
-                motor2.set(0);
-                motor3.set(0);
-
-                motor1.enableControl(); //starts feedback ctrl
-                motor2.enableControl();
-                motor3.enableControl();
-                
-                CANInit = true;
-            } 
-            catch (CANInvalidBufferException ex)
-            {
-                CANTimeout();
-            }
-        }
-        System.out.println("### GOT EM' COACH  ###");
+        System.out.println("Finished prefs.");
     }
     
     /**
@@ -328,31 +290,48 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
-    		tower1.stop();
-    		tower2.stop();
+    		//tower1.stop();
+    		//tower2.stop();
     	}
     	prevRefreshPressed = refreshPressed;
+
+    	/*********************************************************/
     	
-    	if(tower1.state_ == State.STOPPED)
+    	// going up story
+		boolean raiseStoryPressed = raiseStory.get();				// reads button values
+    	if(raiseStoryPressed && (prevRaiseStoryPressed == false))
     	{
-    		boolean raisePressed = raise.get();				// reads button values
-	    	if(raisePressed && (prevRaisePressed == false))
-	    	{
-	    		elevationTarget_ = !elevationTarget_;
-	    		tower1.goUp(elevationTarget_);
-	    		tower2.goUp(elevationTarget_);
-	    	}
-	    	prevRaisePressed = raisePressed;
-	
-	    	boolean lowerPressed = lower.get();
-	    	if(lowerPressed && (prevLowerPressed == false))
-	    	{
-	    		elevationTarget_ = !elevationTarget_;
-	    		tower1.goDown(elevationTarget_);
-	    		tower2.goDown(elevationTarget_);
-	    	}
-	    	prevLowerPressed = lowerPressed;
+    		PIDTower1.goUpStory();
+    		PIDTower2.goUpStory();
     	}
+    	prevRaiseStoryPressed = raiseStoryPressed;
+
+    	// going down story
+    	boolean lowerStoryPressed = lowerStory.get();
+    	if(lowerStoryPressed && (prevLowerStoryPressed == false))
+    	{
+    		PIDTower1.goDownStory();
+    		PIDTower2.goDownStory();
+    	}
+    	prevLowerStoryPressed = lowerStoryPressed;
+    	
+    	// going up elevation
+    	boolean raiseElevationPressed = raiseElevation.get();
+    	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
+    	{
+    		PIDTower1.goDownStory();
+    		PIDTower2.goDownStory();
+    	}
+    	prevRaiseElevationPressed = raiseElevationPressed;
+    	
+    	// going down elevation
+    	boolean lowerElevationPressed = lowerElevation.get();
+    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
+    	{
+    		PIDTower1.goDownStory();
+    		PIDTower2.goDownStory();
+    	}
+    	prevLowerElevationPressed = lowerElevationPressed;
     	
     	periodic();
     	
@@ -393,17 +372,17 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void periodic()
     {
-    	tower1.periodic();
-    	tower2.periodic();
-    	SmartDashboard.putBoolean("Elevation State1", tower1.getElevaitonState());
-    	SmartDashboard.putBoolean("Elevation State2", tower2.getElevaitonState());
+    	PIDTower1.periodic();
+    	PIDTower2.periodic();
+    	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
+    	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
     	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
     	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
     	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
     	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
-    	SmartDashboard.putNumber("Tower Encoder 1", tower1.encoder_.getRaw());
-    	SmartDashboard.putNumber("Tower Encoder 2", tower2.encoder_.getRaw());
-//    	System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
+    	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
+    	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
+       // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
     
     /**
