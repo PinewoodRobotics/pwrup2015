@@ -13,18 +13,17 @@ import edu.wpi.first.wpilibj.Talon;
  * @version 14 February 2015
  */
 
-
 public class PIDTower 
 {
 	public Talon talon_;
 	public DigitalInput hallEffect_;
-	public DigitalInput heightLimit_;
 	public Encoder encoder_;
 	public PIDController controller_;
 	
 	public double setPoint_;
 	public double encoderMax_;		// keeps track of encoder value when stop is hit
 	public boolean elevationState_ = false; // true = PLATFORM, false = FLOOR  |   OUR TARGET
+	public boolean heightLimit_ = false; // true = we are touching it, false = we are not touching it
 	
 	public final double elevationDiff = 130.0 / 4.0;
 	public final double StoryDiff = 1024.0 / 4.0;
@@ -53,12 +52,12 @@ public class PIDTower
 		
 		if(elevation == true)
 		{
-			controller_.setSetpoint(controller_.getSetpoint() + elevationDiff);
+			goToSetPoint(controller_.getSetpoint() + elevationDiff);
 		}
 		
 		if(elevation == false)
 		{
-			controller_.setSetpoint(controller_.getSetpoint() - elevationDiff);
+			goToSetPoint(controller_.getSetpoint() - elevationDiff);
 		}
 		
 		elevationState_ = elevation;
@@ -66,12 +65,15 @@ public class PIDTower
 	
 	public void goUpStory()
 	{
-		controller_.setSetpoint(controller_.getSetpoint() + StoryDiff);
+		if(heightLimit_ == true)
+			return;
+		
+		goToSetPoint(controller_.getSetpoint() + StoryDiff);
 	}
 	
 	public void goDownStory()
 	{
-		controller_.setSetpoint(controller_.getSetpoint() - StoryDiff);
+		goToSetPoint(controller_.getSetpoint() - StoryDiff);
 	}
 	
 	public boolean getElevationState()
@@ -82,6 +84,31 @@ public class PIDTower
 	public void periodic()
 	{
 		
+	}
+	
+	public void setHeightLimit(boolean heightLimit)
+	{
+		if(heightLimit == heightLimit_)
+		{
+			return;
+		}
+		
+		heightLimit_ = heightLimit;
+		
+		if(heightLimit_ == true)
+		{
+			controller_.setOutputRange(-999999999, setPoint_);
+		}
+		else
+		{
+			controller_.setOutputRange(0, 0);
+		}
+	}
+	
+	public void goToSetPoint(double point)
+	{
+		setPoint_ = point;
+		controller_.setSetpoint(setPoint_);
 	}
 	
 }
