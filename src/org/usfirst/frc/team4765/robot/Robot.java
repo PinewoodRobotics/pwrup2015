@@ -40,8 +40,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	public static CANTalon motor2 = new CANTalon(2); // motors for driving
 	public static CANTalon motor3 = new CANTalon(3); 
 	 
-	public static Talon talon1 = new Talon(8);
-	public static Talon talon2 = new Talon(9); // motors for the chain
+	//public static Talon talon1 = new Talon(8);
+	//public static Talon talon2 = new Talon(9); // motors for the chain
 	
 	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
 	JoystickButton trigger = new JoystickButton(driver, 1);
@@ -319,8 +319,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	boolean raiseElevationPressed = raiseElevation.get();
     	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
     	{
-    		PIDTower1.goDownStory();
-    		PIDTower2.goDownStory();
+    		PIDTower1.setElevationState(true);
+    		PIDTower2.setElevationState(true);
     	}
     	prevRaiseElevationPressed = raiseElevationPressed;
     	
@@ -328,8 +328,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	boolean lowerElevationPressed = lowerElevation.get();
     	if(lowerElevationPressed && (prevLowerElevationPressed == false))
     	{
-    		PIDTower1.goDownStory();
-    		PIDTower2.goDownStory();
+    		PIDTower1.setElevationState(false);
+    		PIDTower2.setElevationState(false);
     	}
     	prevLowerElevationPressed = lowerElevationPressed;
     	
@@ -388,6 +388,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     /**
      * Test function for tweaking the towers.
      */
+    /*
     public void testPeriodic1() 
     {
     	double throttle = driver.getThrottle();
@@ -416,6 +417,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	printSensorValues();
     	//Timer.delay(0.5);
     }
+    */
     
     static boolean lastTower1 = true;
     static boolean lastTower2 = true;
@@ -423,6 +425,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      * With the press of the trigger, the tower moves the chain until it hits the edge of the hall effect sensor.
      * outdated now
      */
+    
+    /*
     public void testPeriodi4()
     
     {
@@ -454,6 +458,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	lastTower2 = readHallEffect2;
     	lastTrigger = triggerPressed;
     }
+    */
     
     /**
      * Runs the motors at max positive and negative speed and prints out the values.
@@ -506,11 +511,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     /**
      * Function runs the tower talons and prints the boolean of the halleffect to the smartdashboard.
      */
+    /*
     public void testPeriodic()
     {
     	talon1.set(0.35);
     	talon2.set(0.35);
     }
+    */
     
     public void testInit()
     {

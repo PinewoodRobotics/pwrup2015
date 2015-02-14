@@ -22,7 +22,7 @@ public class PIDTower
 	
 	public double setPoint_;
 	public double encoderMax_;		// keeps track of encoder value when stop is hit
-	public boolean elevationState_; // true = PLATFORM, false = FLOOR  |   OUR TARGET
+	public boolean elevationState_ = false; // true = PLATFORM, false = FLOOR  |   OUR TARGET
 	
 	public static final double elevationDiff = 130.0;
 	public static final double StoryDiff = 1024.0;
@@ -45,13 +45,19 @@ public class PIDTower
 	public void setElevationState(boolean elevation)
 	{
 		if(elevation == elevationState_)
+		{
 			return;
+		}
 		
 		if(elevation == true)
+		{
 			controller_.setSetpoint(controller_.getSetpoint() + elevationDiff);
+		}
 		
 		if(elevation == false)
+		{
 			controller_.setSetpoint(controller_.getSetpoint() - elevationDiff);
+		}
 	}
 	
 	public void goUpStory()
