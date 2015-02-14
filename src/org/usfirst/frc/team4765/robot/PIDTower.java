@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4765.robot;
 
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj.Talon;
  * 
  * @version 14 February 2015
  */
+
 
 public class PIDTower 
 {
@@ -24,15 +26,15 @@ public class PIDTower
 	public double encoderMax_;		// keeps track of encoder value when stop is hit
 	public boolean elevationState_ = false; // true = PLATFORM, false = FLOOR  |   OUR TARGET
 	
-	public static final double elevationDiff = 130.0;
-	public static final double StoryDiff = 1024.0;
+	public final double elevationDiff = 130.0 / 4.0;
+	public final double StoryDiff = 1024.0 / 4.0;
 	
 	public PIDTower(int talonPort, int hallEffectPort, int QA, int QB)
 	{
 		talon_ = new Talon(talonPort);
 		hallEffect_ = new DigitalInput(hallEffectPort);
-		encoder_ = new Encoder(QA, QB, false);
-		encoder_.reset();
+		encoder_ = new Encoder(QA, QB, false, EncodingType.k4X);
+		//encoder_.reset();
 		controller_ = new PIDController(0.0, 0.0, 0.0, encoder_, talon_);
 	}
 	

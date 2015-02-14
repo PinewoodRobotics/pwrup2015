@@ -1,14 +1,14 @@
 package org.usfirst.frc.team4765.robot;
 
-import org.usfirst.frc.team4765.robot.Tower.State;
+import org.usfirst.frc.team4765.robot.PIDTower;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Encoder;
+//import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.Talon;
+//import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
@@ -54,8 +54,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton lowerElevation = new JoystickButton(driver, 5); 	// up
 	
 	static DigitalInput heightLimit = new DigitalInput(7);
-	static DigitalInput hallEffect1 = new DigitalInput(8);
-	static DigitalInput hallEffect2 = new DigitalInput(9);
+	//static DigitalInput hallEffect1 = new DigitalInput(8);
+	//static DigitalInput hallEffect2 = new DigitalInput(9);
 	
 	//public static Tower tower1 = new Tower(talon1, hallEffect1, heightLimit, 3, 4);
 	//public static Tower tower2 = new Tower(talon2, hallEffect2, heightLimit, 5, 6);
@@ -163,7 +163,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         
         // PIDTOWER
         
-        TowerP = prefs.getDouble("TowerP", 0.001);   // can change values from here, press button to activate changes        
+        TowerP = prefs.getDouble("TowerP", 0.004);   // can change values from here, press button to activate changes        
         TowerI = prefs.getDouble("TowerI", 0.0);
         TowerD = prefs.getDouble("TowerD", 0.0);
         
@@ -376,10 +376,10 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	PIDTower2.periodic();
     	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
     	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
-    	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
+    	/*SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
     	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
     	SmartDashboard.putNumber("HallEffect1", hallEffect1.get()?1:0);
-    	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);
+    	SmartDashboard.putNumber("HallEffect2", hallEffect2.get()?1:0);*/
     	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
     	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
        // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
@@ -529,6 +529,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void printSensorValues()
     {
-    	System.out.println(hallEffect1.get() + "                    " + hallEffect2.get());
+    	//System.out.println(hallEffect1.get() + "                    " + hallEffect2.get());
     }
 }
