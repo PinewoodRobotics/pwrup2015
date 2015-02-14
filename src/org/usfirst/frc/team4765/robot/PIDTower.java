@@ -81,11 +81,6 @@ public class PIDTower
 		return elevationState_;
 	}
 	
-	public void periodic()
-	{
-		
-	}
-	
 	public void setHeightLimit(boolean heightLimit)
 	{
 		if(heightLimit == heightLimit_)

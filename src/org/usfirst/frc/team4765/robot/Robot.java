@@ -275,6 +275,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void teleopPeriodic() 
     {
+    	periodic();
+    	
     	boolean refreshPressed = refreshPrefs.get();
 
     	if(refreshPressed && (prevRefreshPressed == false))
@@ -323,8 +325,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	}
     	prevLowerElevationPressed = lowerElevationPressed;
     	
-    	periodic();
-    	
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
@@ -362,8 +362,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void periodic()
     {
-    	PIDTower1.periodic();
-    	PIDTower2.periodic();
+    	PIDTower1.setHeightLimit(!heightLimit.get());
+    	PIDTower2.setHeightLimit(!heightLimit.get());
     	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
     	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
     	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
