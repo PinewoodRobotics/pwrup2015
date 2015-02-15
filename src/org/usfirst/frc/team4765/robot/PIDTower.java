@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.Talon;
  * @author Dean Reece
  * 
  * @version 14 February 2015
+ * TODO: Make sure height limit will stop while talon is in motion
+ * TODO: Increase tolerance
  */
 
 public class PIDTower 
@@ -40,11 +42,6 @@ public class PIDTower
 		controller_.setAbsoluteTolerance(6.0);
 	}
 	
-	public void homeEncoder()
-	{
-		encoder_.reset();
-		setPoint_ = 0.0;
-	}
 	
 	public void setElevationState(boolean elevation)
 	{
@@ -124,7 +121,7 @@ public class PIDTower
 	public void goHome()
 	{
 		controller_.disable();
-		talon_.set(- 0.3);
+		talon_.set(- 1);
 		homing = true;
 	}
 	
@@ -135,9 +132,12 @@ public class PIDTower
 		{
 			if((hallEffect == true) && (prevHallEffect_ == false))
 			{
-				talon_.set(0);
-				homeEncoder();	// reenable pid controller
-				controller_.setSetpoint(setPoint_ + offSet_);	// go to the offset number
+				talon_.set(0.0);
+				encoder_.reset();
+				setPoint_ = 0.0;
+				controller_.setSetpoint(setPoint_);
+				//controller_.setSetpoint(setPoint_ + offSet_);	// go to the offset number
+				controller_.enable();
 				homing = false;
 			}
 		}

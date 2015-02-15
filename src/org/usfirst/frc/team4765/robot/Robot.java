@@ -152,16 +152,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         TowerP = prefs.getDouble("TowerP", 0.004);   // can change values from here, press button to activate changes        
         TowerI = prefs.getDouble("TowerI", 0.0);
         TowerD = prefs.getDouble("TowerD", 0.0);
-        towerMin = prefs.getDouble("TowerMin", 0.5);
+        towerMin = prefs.getDouble("TowerMin", -0.5);
         towerMax = prefs.getDouble("TowerMax", 0.5);	
         PIDTower1.offSet_ = prefs.getDouble("Tower1 Offset", 0.0);
         PIDTower2.offSet_ = prefs.getDouble("Tower2 Offset", 0.0);
         
 		SmartDashboard.putNumber("TowerMin", towerMin);
 		SmartDashboard.putNumber("TowerMax", towerMax);
-		
-    	PIDTower1.goHome();
-    	PIDTower2.goHome();
         
         try
         {
@@ -185,6 +182,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
             
             PIDTower1.controller_.enable();
             PIDTower2.controller_.enable();
+            
+        	PIDTower1.goHome();
+        	PIDTower2.goHome();
         } 
         catch (CANInvalidBufferException ex)
         {
@@ -377,6 +377,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	SmartDashboard.putBoolean("Tower2 button", !tower2TotePresent.get());
     	SmartDashboard.putBoolean("HallEffect1", PIDTower1.hallEffect_.get());
     	SmartDashboard.putBoolean("HallEffect2", PIDTower2.hallEffect_.get());
+    	SmartDashboard.putBoolean("Homing1", PIDTower1.homing);
+    	SmartDashboard.putBoolean("Homing2", PIDTower2.homing);
        // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
     
