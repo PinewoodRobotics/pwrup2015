@@ -22,8 +22,11 @@ public class PIDTower
 	
 	public double setPoint_;
 	public double encoderMax_;		// keeps track of encoder value when stop is hit
+	public double offSet_;
+	public boolean prevHallEffect_ = false;
 	public boolean elevationState_ = false; // true = PLATFORM, false = FLOOR  |   OUR TARGET
 	public boolean heightLimit_ = false; // true = we are touching it, false = we are not touching it
+	public boolean homing = false;
 	
 	public final double elevationDiff = 130.0 / 4.0;
 	public final double StoryDiff = 1024.0 / 4.0;
@@ -109,10 +112,36 @@ public class PIDTower
 	
 	public boolean readyForCommand()
 	{
+		if(homing)
+			return false;
+		
 		if(heightLimit_ == true)
 			return true;
 		
 		return controller_.onTarget();
+	}
+	
+	public void goHome()
+	{
+		controller_.disable();
+		talon_.set(- 0.3);
+		homing = true;
+	}
+	
+	public void periodic()
+	{
+		boolean hallEffect = hallEffect_.get();
+		if(homing)
+		{
+			if((hallEffect == true) && (prevHallEffect_ == false))
+			{
+				talon_.set(0);
+				homeEncoder();	// reenable pid controller
+				controller_.setSetpoint(setPoint_ + offSet_);	// go to the offset number
+				homing = false;
+			}
+		}
+		prevHallEffect_ = hallEffect;
 	}
 	
 }

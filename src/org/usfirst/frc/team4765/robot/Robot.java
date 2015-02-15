@@ -52,6 +52,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton lowerElevation = new JoystickButton(driver, 5); 	// up
 	
 	static DigitalInput heightLimit = new DigitalInput(7);
+	static DigitalInput tower1TotePresent = new DigitalInput(1);
+	static DigitalInput tower2TotePresent = new DigitalInput(2);
 	
 	public static PIDTower PIDTower1 = new PIDTower(8, 8, 3, 4);
 	public static PIDTower PIDTower2 = new PIDTower(9, 9, 5, 6);
@@ -68,6 +70,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     double TowerP;
     double TowerI;
     double TowerD;
+    double towerMin;
+    double towerMax;
     
     double P;				// PID loop values
     double I;				
@@ -127,7 +131,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void updatePrefs()
     {
-    	//boolean s = true;
         MaxRPM = prefs.getDouble("MaxRPM", 862.0);
         P = prefs.getDouble("P", 0.0);   // can change values from here, press button to activate changes        
         I = prefs.getDouble("I", 0.0);
@@ -135,13 +138,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         F = prefs.getDouble("F", 1.0);
         iZone = prefs.getInt("iZone", 0);
         Ramp = prefs.getDouble("Ramp", 1200.0);
-        
-        prefs.putDouble("P", P);
-        prefs.putDouble("I", I);
-        prefs.putDouble("D", D);
-        prefs.putDouble("F", F);
-        prefs.putInt("iZone", iZone);
-        prefs.putDouble("Ramp", Ramp);
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("CANTalon I", I);
@@ -156,14 +152,16 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         TowerP = prefs.getDouble("TowerP", 0.004);   // can change values from here, press button to activate changes        
         TowerI = prefs.getDouble("TowerI", 0.0);
         TowerD = prefs.getDouble("TowerD", 0.0);
+        towerMin = prefs.getDouble("TowerMin", 0.5);
+        towerMax = prefs.getDouble("TowerMax", 0.5);	
+        PIDTower1.offSet_ = prefs.getDouble("Tower1 Offset", 0.0);
+        PIDTower2.offSet_ = prefs.getDouble("Tower2 Offset", 0.0);
         
-        prefs.putDouble("TowerP", TowerP);
-        prefs.putDouble("TowerI", TowerI);
-        prefs.putDouble("TowerD", TowerD);
-        
-		SmartDashboard.putNumber("PIDTower P", TowerP);
-		SmartDashboard.putNumber("PIDTower I", TowerI);
-		SmartDashboard.putNumber("PIDTower D", TowerD);
+		SmartDashboard.putNumber("TowerMin", towerMin);
+		SmartDashboard.putNumber("TowerMax", towerMax);
+		
+    	PIDTower1.goHome();
+    	PIDTower2.goHome();
         
         try
         {
@@ -182,9 +180,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
             PIDTower1.controller_.setPID(TowerP, TowerI, TowerD);
             PIDTower2.controller_.setPID(TowerP, TowerI, TowerD);
             
+            PIDTower1.controller_.setOutputRange(towerMin, towerMax);
+            PIDTower2.controller_.setOutputRange(towerMin, towerMax);
+            
             PIDTower1.controller_.enable();
             PIDTower2.controller_.enable();
-            
         } 
         catch (CANInvalidBufferException ex)
         {
@@ -363,6 +363,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void periodic()
     {
+    	PIDTower1.periodic();
+    	PIDTower2.periodic();
     	PIDTower1.setHeightLimit(!heightLimit.get());
     	PIDTower2.setHeightLimit(!heightLimit.get());
     	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
@@ -371,6 +373,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	SmartDashboard.putBoolean("Tower2 Ready", PIDTower2.readyForCommand());
     	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
     	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
+    	SmartDashboard.putBoolean("Tower1 button", tower1TotePresent.get());
+    	SmartDashboard.putBoolean("Tower2 button", tower2TotePresent.get());
        // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
     
