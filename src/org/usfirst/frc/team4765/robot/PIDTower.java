@@ -33,8 +33,8 @@ public class PIDTower
 		talon_ = new Talon(talonPort);
 		hallEffect_ = new DigitalInput(hallEffectPort);
 		encoder_ = new Encoder(QA, QB, false, EncodingType.k4X);
-		//encoder_.reset();
 		controller_ = new PIDController(0.0, 0.0, 0.0, encoder_, talon_);
+		controller_.setAbsoluteTolerance(6.0);
 	}
 	
 	public void homeEncoder()
@@ -92,11 +92,12 @@ public class PIDTower
 		
 		if(heightLimit_ == true)
 		{
-			controller_.setOutputRange(-999999999, setPoint_);
+			controller_.setOutputRange(setPoint_ - 9999, setPoint_);
 		}
 		else
 		{
 			controller_.setOutputRange(0, 0);
+			goToSetPoint(setPoint_);
 		}
 	}
 	
@@ -104,6 +105,14 @@ public class PIDTower
 	{
 		setPoint_ = point;
 		controller_.setSetpoint(setPoint_);
+	}
+	
+	public boolean readyForCommand()
+	{
+		if(heightLimit_ == true)
+			return true;
+		
+		return controller_.onTarget();
 	}
 	
 }

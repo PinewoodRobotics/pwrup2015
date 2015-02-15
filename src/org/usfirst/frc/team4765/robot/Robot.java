@@ -287,44 +287,45 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	}
     	prevRefreshPressed = refreshPressed;
 
-    	/*********************************************************/
-    	
-    	// going up story
-		boolean raiseStoryPressed = raiseStory.get();				// reads button values
-    	if(raiseStoryPressed && (prevRaiseStoryPressed == false))
+    	if(PIDTower1.readyForCommand() && PIDTower2.readyForCommand())
     	{
-    		PIDTower1.goUpStory();
-    		PIDTower2.goUpStory();
+	    	// going up story
+			boolean raiseStoryPressed = raiseStory.get();				// reads button values
+	    	if(raiseStoryPressed && (prevRaiseStoryPressed == false))
+	    	{
+	    		
+	    		PIDTower1.goUpStory();
+	    		PIDTower2.goUpStory();
+	    	}
+	    	prevRaiseStoryPressed = raiseStoryPressed;
+	
+	    	// going down story
+	    	boolean lowerStoryPressed = lowerStory.get();
+	    	if(lowerStoryPressed && (prevLowerStoryPressed == false))
+	    	{
+	    		PIDTower1.goDownStory();
+	    		PIDTower2.goDownStory();
+	    	}
+	    	prevLowerStoryPressed = lowerStoryPressed;
+	    	
+	    	// going up elevation
+	    	boolean raiseElevationPressed = raiseElevation.get();
+	    	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
+	    	{
+	    		PIDTower1.setElevationState(true);
+	    		PIDTower2.setElevationState(true);
+	    	}
+	    	prevRaiseElevationPressed = raiseElevationPressed;
+	    	
+	    	// going down elevation
+	    	boolean lowerElevationPressed = lowerElevation.get();
+	    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
+	    	{
+	    		PIDTower1.setElevationState(false);
+	    		PIDTower2.setElevationState(false);
+	    	}
+	    	prevLowerElevationPressed = lowerElevationPressed;
     	}
-    	prevRaiseStoryPressed = raiseStoryPressed;
-
-    	// going down story
-    	boolean lowerStoryPressed = lowerStory.get();
-    	if(lowerStoryPressed && (prevLowerStoryPressed == false))
-    	{
-    		PIDTower1.goDownStory();
-    		PIDTower2.goDownStory();
-    	}
-    	prevLowerStoryPressed = lowerStoryPressed;
-    	
-    	// going up elevation
-    	boolean raiseElevationPressed = raiseElevation.get();
-    	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
-    	{
-    		PIDTower1.setElevationState(true);
-    		PIDTower2.setElevationState(true);
-    	}
-    	prevRaiseElevationPressed = raiseElevationPressed;
-    	
-    	// going down elevation
-    	boolean lowerElevationPressed = lowerElevation.get();
-    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
-    	{
-    		PIDTower1.setElevationState(false);
-    		PIDTower2.setElevationState(false);
-    	}
-    	prevLowerElevationPressed = lowerElevationPressed;
-    	
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
@@ -366,6 +367,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	PIDTower2.setHeightLimit(!heightLimit.get());
     	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
     	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
+    	SmartDashboard.putBoolean("Tower1 Ready", PIDTower1.readyForCommand());
+    	SmartDashboard.putBoolean("Tower2 Ready", PIDTower2.readyForCommand());
     	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
     	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
        // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
