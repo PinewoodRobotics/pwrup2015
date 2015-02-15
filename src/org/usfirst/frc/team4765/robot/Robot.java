@@ -373,8 +373,10 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	SmartDashboard.putBoolean("Tower2 Ready", PIDTower2.readyForCommand());
     	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
     	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
-    	SmartDashboard.putBoolean("Tower1 button", tower1TotePresent.get());
-    	SmartDashboard.putBoolean("Tower2 button", tower2TotePresent.get());
+    	SmartDashboard.putBoolean("Tower1 button", !tower1TotePresent.get());
+    	SmartDashboard.putBoolean("Tower2 button", !tower2TotePresent.get());
+    	SmartDashboard.putBoolean("HallEffect1", PIDTower1.hallEffect_.get());
+    	SmartDashboard.putBoolean("HallEffect2", PIDTower2.hallEffect_.get());
        // System.out.println(motor1.getEncVelocity() + "     " + motor2.getEncVelocity() + "     " + motor3.getEncVelocity());
     }
     
