@@ -92,11 +92,11 @@ public class PIDTower
 		
 		if(heightLimit_ == true)
 		{
-			controller_.setOutputRange(setPoint_ - 9999, setPoint_);
+			controller_.setInputRange(setPoint_ - 9999, setPoint_);
 		}
 		else
 		{
-			controller_.setOutputRange(0, 0);
+			controller_.setInputRange(0.0, 0.0);
 			goToSetPoint(setPoint_);
 		}
 	}
