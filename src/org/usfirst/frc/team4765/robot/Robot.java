@@ -80,6 +80,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     double MaxRPM;
     double StartPosition;
     int Profile;	    // value of 0 or 1
+    int autonSetting;
 
     double[] motorSpeed = new double[4]; //holds motor speeds (in rpm)
     
@@ -92,6 +93,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public static boolean prevRaiseElevationPressed = false;
     public static boolean prevLowerElevationPressed = false;
     public static boolean heightLimitState			= false;
+    
+    /**
+     * TODO: add preference for which auton code we use
+     * TODO: auton1: home & stand still - Done
+     * TODO: auton2: home & move forward
+     * TODO: auton3: home & pickuptote and move forward
+     */
     
     public void CANTimeout()
     {
@@ -136,6 +144,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         F = prefs.getDouble("F", 1.0);
         iZone = prefs.getInt("iZone", 0);
         Ramp = prefs.getDouble("Ramp", 1200.0);
+        
+        autonSetting = prefs.getInt("Auton Setting", 1);	// goes from 1 to 4
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("CANTalon I", I);
@@ -196,7 +206,18 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void autonomousInit() 
     {
-    	autoLoopCounter = 0;
+    	switch(autonSetting)
+    	{
+	    	case 1:
+	    		break;
+	    	
+	    	case 2:
+	    		auton2Init();
+	    	break;
+	    	
+	    	case 3:
+	    		break;
+    	}
     }
    
     /**
@@ -204,17 +225,64 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void autonomousPeriodic() 
     {
-    	/*
-    	if(autoLoopCounter < 100) //Check if we've completed 100 loops (approximately 2 seconds)
-		{
-			myRobot.drive(-0.5, 0.0); 	// drive forwards half speed
-			autoLoopCounter++;
-			} else {
-			myRobot.drive(0.0, 0.0); 	// stop robot
-		}
-		*/
+    	switch(autonSetting)
+    	{
+	    	case 1:
+	    		break;
+	    	
+	    	case 2:
+	    		auton2Periodic();
+	    	break;
+    	}
+    	periodic();
     }
     
+    /**
+     * This function is called and homes the sensors and doesn't move. 
+     */
+    public void auton1()
+    {
+    	PIDTower1.goHome();
+    	PIDTower2.goHome();
+    	PIDTower1.periodic();
+    	PIDTower2.periodic();
+    }
+    
+    /**
+     * This function moves the robot in auton based on a timer.
+     */
+    public void auton2Timer()
+    {
+    	auton1();
+    	Timer autonTimer = new Timer();
+        autonTimer.reset();
+        autonTimer.start();
+        while(autonTimer.get() < 0.75)
+        {
+        	motor1.set(MaxRPM * 0.5 * -1.0);
+        	motor2.set(MaxRPM * 0.5);
+        }
+        autonTimer.stop();
+    }
+    
+    /**
+     * This function moves the robot in auton based on encoders.
+     * This is called in autonPeriodic
+     */
+    public void auton2Init()
+    {
+    	auton1();
+    	StartPosition = motor1.getPosition();
+    	driveMath(0, 0.5, 0, 1);
+    }
+    
+    public void auton2Periodic()
+    {
+    	double distance = Math.abs(motor1.getPosition()-StartPosition);
+    	if(distance > 10)
+    		driveMath(0, 0, 0, 0);
+    }
+
     /**
      * This function is called once each time the robot enters tele-operated mode.
      */
@@ -280,8 +348,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
-    		//tower1.stop();
-    		//tower2.stop();
     	}
     	prevRefreshPressed = refreshPressed;
 
@@ -338,15 +404,25 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
-
+    	
         Y = mapDrivingValue(Y);
         X = mapDrivingValue(X);		// changes the values for easier driving
         R = mapDrivingValue(R);
-    	
+        
+        double throttle = (driver.getThrottle() + 1) / 2;
+        
+        driveMath(X, Y, R, throttle);
+    }
+    
+    /**
+     * 	This function takes the values from the joystick and gives the commands to the motors
+     */
+    public void driveMath(double X, double Y, double R, double throttle)
+    {   
     	double motor1speed = X - Y + -0.5 * R; 
     	double motor2speed = - X - Y + 0.5 * R;
     	double motor3speed = 0.5 * X + R;
-    	
+        
     	double biggestValue = Math.max(motor1speed, Math.max(motor2speed, motor3speed));
     	
     	if(biggestValue > 1.0)
@@ -355,13 +431,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     		motor2speed /= biggestValue;
     		motor3speed /= biggestValue;
     	}
-    	
-    	double throttle = (driver.getThrottle() + 1) / 2;
-    	
+   
     	motor1speed = motor1speed * throttle;
     	motor2speed = motor2speed * throttle;
     	motor3speed = motor3speed * throttle;
-    		
+    	
     	motor1.set(MaxRPM * motor1speed * -1.0);
     	motor2.set(MaxRPM * motor2speed);				// has to be in velocity mode
     	motor3.set(MaxRPM * motor3speed);
