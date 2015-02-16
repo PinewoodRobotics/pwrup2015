@@ -328,6 +328,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	}
 	    	prevLowerElevationPressed = lowerElevationPressed;
     	}
+    	
+    	if(PIDTower1.readyForCommand() && PIDTower2.readyForCommand() && !tower1TotePresent.get() && !tower2TotePresent.get() && trigger.get())
+    	{
+    		PIDTower1.goUpStory();
+    		PIDTower2.goUpStory();
+    	}
+    	
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
