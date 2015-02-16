@@ -38,9 +38,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	public static CANTalon motor1 = new CANTalon(1); 
 	public static CANTalon motor2 = new CANTalon(2); // motors for driving
 	public static CANTalon motor3 = new CANTalon(3); 
-	 
-	//public static Talon talon1 = new Talon(8);
-	//public static Talon talon2 = new Talon(9); // motors for the chain
 	
 	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
 	JoystickButton trigger = new JoystickButton(driver, 1);

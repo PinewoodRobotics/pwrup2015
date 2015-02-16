@@ -49,12 +49,12 @@ public class PIDTower
 		
 		if(elevation == true)
 		{
-			goToSetPoint(controller_.getSetpoint() + elevationDiff);
+			goToSetPoint(setPoint_ + elevationDiff);
 		}
 		
 		if(elevation == false)
 		{
-			goToSetPoint(controller_.getSetpoint() - elevationDiff);
+			goToSetPoint(setPoint_ - elevationDiff);
 		}
 		
 		elevationState_ = elevation;
@@ -89,8 +89,8 @@ public class PIDTower
 		
 		if(heightLimit_ == true)
 		{
-			controller_.setInputRange(setPoint_ - 9999, encoder_.pidGet());	// if we hit height limit, we allow robot to go down at regular power, 
-															// but don't allow it to go up
+			controller_.setInputRange(setPoint_ - 9999, encoder_.pidGet());	/* if we hit height limit, we allow robot to go down at regular power, 
+																			 but don't allow it to go up */
 			goToSetPoint(setPoint_);
 		}
 		else
