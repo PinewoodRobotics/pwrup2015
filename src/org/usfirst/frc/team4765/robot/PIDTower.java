@@ -37,7 +37,7 @@ public class PIDTower
 		hallEffect_ = new DigitalInput(hallEffectPort);
 		encoder_ = new Encoder(QA, QB, false, EncodingType.k4X);
 		controller_ = new PIDController(0.0, 0.0, 0.0, encoder_, talon_);
-		controller_.setAbsoluteTolerance(6.0);
+		controller_.setAbsoluteTolerance(10.0);
 	}
 	
 	public void setElevationState(boolean elevation)
@@ -89,12 +89,13 @@ public class PIDTower
 		
 		if(heightLimit_ == true)
 		{
-			controller_.setOutputRange(Robot.towerMin, 0);	// if we hit height limit, we allow robot to go down at regular power, 
+			controller_.setInputRange(setPoint_ - 9999, encoder_.pidGet());	// if we hit height limit, we allow robot to go down at regular power, 
 															// but don't allow it to go up
+			goToSetPoint(setPoint_);
 		}
 		else
 		{
-			controller_.setOutputRange(Robot.towerMin, Robot.towerMax);
+			controller_.setInputRange(0, 0);
 			goToSetPoint(setPoint_);
 		}
 	}

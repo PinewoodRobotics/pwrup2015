@@ -371,8 +371,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
     	SmartDashboard.putBoolean("Tower1 Ready", PIDTower1.readyForCommand());
     	SmartDashboard.putBoolean("Tower2 Ready", PIDTower2.readyForCommand());
-    	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.getRaw());
-    	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.getRaw());
+    	SmartDashboard.putNumber("Tower Encoder 1", PIDTower1.encoder_.pidGet());
+    	SmartDashboard.putNumber("Tower Encoder 2", PIDTower2.encoder_.pidGet());
     	SmartDashboard.putBoolean("Tower1 button", !tower1TotePresent.get());
     	SmartDashboard.putBoolean("Tower2 button", !tower2TotePresent.get());
     	SmartDashboard.putBoolean("HallEffect1", PIDTower1.hallEffect_.get());
