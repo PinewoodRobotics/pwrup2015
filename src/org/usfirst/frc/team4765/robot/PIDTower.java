@@ -11,8 +11,6 @@ import edu.wpi.first.wpilibj.Talon;
  * @author Dean Reece
  * 
  * @version 14 February 2015
- * TODO: Make sure height limit will stop while talon is in motion
- * TODO: Increase tolerance
  */
 
 public class PIDTower 
@@ -42,6 +40,11 @@ public class PIDTower
 		controller_.setAbsoluteTolerance(6.0);
 	}
 	
+	public void homeEncoder()
+	{
+		encoder_.reset();
+		setPoint_ = 0.0;
+	}
 	
 	public void setElevationState(boolean elevation)
 	{
@@ -92,11 +95,12 @@ public class PIDTower
 		
 		if(heightLimit_ == true)
 		{
-			controller_.setInputRange(setPoint_ - 9999, setPoint_);
+			controller_.setOutputRange(Robot.towerMin, 0);	// if we hit height limit, we allow robot to go down at regular power, 
+															// but don't allow it to go up
 		}
 		else
 		{
-			controller_.setInputRange(0.0, 0.0);
+			controller_.setOutputRange(Robot.towerMin, Robot.towerMax);
 			goToSetPoint(setPoint_);
 		}
 	}
@@ -121,7 +125,7 @@ public class PIDTower
 	public void goHome()
 	{
 		controller_.disable();
-		talon_.set(- 1);
+		talon_.set(- 0.3);
 		homing = true;
 	}
 	
@@ -132,12 +136,9 @@ public class PIDTower
 		{
 			if((hallEffect == true) && (prevHallEffect_ == false))
 			{
-				talon_.set(0.0);
-				encoder_.reset();
-				setPoint_ = 0.0;
-				controller_.setSetpoint(setPoint_);
-				//controller_.setSetpoint(setPoint_ + offSet_);	// go to the offset number
-				controller_.enable();
+				talon_.set(0);
+				homeEncoder();	// reenable pid controller
+				controller_.setSetpoint(setPoint_ + offSet_);	// go to the offset number
 				homing = false;
 			}
 		}

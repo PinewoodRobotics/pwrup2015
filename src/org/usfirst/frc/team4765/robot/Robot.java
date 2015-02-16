@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.can.*;
@@ -70,8 +71,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     double TowerP;
     double TowerI;
     double TowerD;
-    double towerMin;
-    double towerMax;
+    public static double towerMin;
+    public static double towerMax;
     
     double P;				// PID loop values
     double I;				
@@ -87,13 +88,12 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     int CANTimeouts;
     
-    public static boolean prevRefreshPressed        = false;
+    public static boolean prevRefreshPressed        = false;	// remembers when the buttons on the joysitck were last pressed
     public static boolean lastTrigger               = false;
     public static boolean prevRaiseStoryPressed     = false;
     public static boolean prevLowerStoryPressed     = false;
     public static boolean prevRaiseElevationPressed = false;
     public static boolean prevLowerElevationPressed = false;
-    public static boolean elevationTarget_ = true;
     
     public void CANTimeout()
     {
@@ -430,9 +430,12 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	System.out.println(motor1.getEncVelocity());
     }
     
+    /**
+     * gets rid of the popup that shows the talons and doesn't let us see PID
+     */
     public void testInit()
     {
-    	//motor1.set(MaxRPM);
+    	LiveWindow.setEnabled(false);
     }
     
     /**
