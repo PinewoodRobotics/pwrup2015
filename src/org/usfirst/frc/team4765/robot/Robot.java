@@ -94,6 +94,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public static boolean prevLowerStoryPressed     = false;
     public static boolean prevRaiseElevationPressed = false;
     public static boolean prevLowerElevationPressed = false;
+    public static boolean heightLimitState			= false;
     
     public void CANTimeout()
     {
@@ -303,6 +304,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	boolean lowerStoryPressed = lowerStory.get();
 	    	if(lowerStoryPressed && (prevLowerStoryPressed == false))
 	    	{
+	    		PIDTower1.setHeightLimit(false);
+	    		PIDTower2.setHeightLimit(false);
 	    		PIDTower1.goDownStory();
 	    		PIDTower2.goDownStory();
 	    	}
@@ -321,6 +324,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	boolean lowerElevationPressed = lowerElevation.get();
 	    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
 	    	{
+	    		PIDTower1.setHeightLimit(false);
+	    		PIDTower2.setHeightLimit(false);
 	    		PIDTower1.setElevationState(false);
 	    		PIDTower2.setElevationState(false);
 	    	}
@@ -365,8 +370,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     {
     	PIDTower1.periodic();
     	PIDTower2.periodic();
-    	PIDTower1.setHeightLimit(!heightLimit.get());
-    	PIDTower2.setHeightLimit(!heightLimit.get());
+    	if(!heightLimit.get() == true)
+    	{
+    		PIDTower1.setHeightLimit(true);
+    		PIDTower2.setHeightLimit(true);
+    	}
     	SmartDashboard.putBoolean("Elevation State1", PIDTower1.getElevationState());
     	SmartDashboard.putBoolean("Elevation State2", PIDTower2.getElevationState());
     	SmartDashboard.putBoolean("Tower1 Ready", PIDTower1.readyForCommand());
