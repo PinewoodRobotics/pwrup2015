@@ -40,12 +40,6 @@ public class PIDTower
 		controller_.setAbsoluteTolerance(6.0);
 	}
 	
-	public void homeEncoder()
-	{
-		encoder_.reset();
-		setPoint_ = 0.0;
-	}
-	
 	public void setElevationState(boolean elevation)
 	{
 		if(elevation == elevationState_)
@@ -136,10 +130,14 @@ public class PIDTower
 		{
 			if((hallEffect == true) && (prevHallEffect_ == false))
 			{
-				talon_.set(0);
-				homeEncoder();	// reenable pid controller
-				controller_.setSetpoint(setPoint_ + offSet_);	// go to the offset number
-				homing = false;
+                talon_.set(0.0);
+                encoder_.reset();
+                setPoint_ = 0.0;
+                controller_.setSetpoint(setPoint_);
+                //controller_.setSetpoint(setPoint_ + offSet_); // go to the offset number
+                controller_.enable();
+                homing = false;
+
 			}
 		}
 		prevHallEffect_ = hallEffect;
