@@ -37,10 +37,10 @@ public class PIDTower
 		hallEffect_ = new DigitalInput(hallEffectPort);
 		encoder_ = new Encoder(QA, QB, false, EncodingType.k4X);
 		controller_ = new PIDController(0.0, 0.0, 0.0, encoder_, talon_);
-		controller_.setAbsoluteTolerance(10.0);
+		controller_.setAbsoluteTolerance(20.0);
 	}
 	
-	/**
+	/*\][][\*
 	 * This function moves the towers up or down a distance corresponding to the platform height.
 	 * If the robot is already at platform, the robot does not move the chain up.
 	 * If the robot is already at floor, the robot does not move the chaind down.
@@ -123,7 +123,7 @@ public class PIDTower
 	public void goToSetPoint(double point)
 	{
 		setPoint_ = point;
-		controller_.setSetpoint(setPoint_);
+		controller_.setSetpoint(setPoint_ + offSet_);
 	}
 	
 	public boolean readyForCommand()
@@ -161,7 +161,7 @@ public class PIDTower
                 talon_.set(0.0);
                 encoder_.reset();
                 setPoint_ = 0.0;
-                controller_.setSetpoint(setPoint_);
+                goToSetPoint(setPoint_);
                 //controller_.setSetpoint(setPoint_ + offSet_); // go to the offset number
                 controller_.enable();
                 homing = false;
