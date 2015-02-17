@@ -25,59 +25,59 @@ import edu.wpi.first.wpilibj.can.*;
 /* WPILibJ doc: <http://first.wpi.edu/FRC/roborio/release/docs/java/index.html> */
 
 /**
- * @author Pavel Khokhlov
- * @author Dean Reece
+ * @author Pavel Khokhlov pkhokhlov@hotmail.com
+ * @author Dean Reece	  dean@reeceweb.com
  * 
- * @version 14 February 2015
+ * @version 17 February 2015
  */
 
 public class Robot extends IterativeRobot // check the error, this happened after our late night drawing trouble shooting
 {
 	int autoLoopCounter;
-
+	// Initializes CANTalons
 	public static CANTalon motor1  = new CANTalon(1); 
 	public static CANTalon motor2  = new CANTalon(2); // motors for driving
 	public static CANTalon motor3  = new CANTalon(3); 
-	
+	// Initializes Joysticks for the driver & operator
 	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
 	public static Joystick operator = new Joystick(1);
-	
+	// Initializes all buttons for the driver
 	JoystickButton trigger         = new JoystickButton(driver, 1);		//joystick values
 	JoystickButton refreshPrefs1   = new JoystickButton(driver, 8);		
 	JoystickButton raiseStory1     = new JoystickButton(driver, 6);	
 	JoystickButton lowerStory1     = new JoystickButton(driver, 4);
 	JoystickButton raiseElevation1 = new JoystickButton(driver, 3);	// down
 	JoystickButton lowerElevation1 = new JoystickButton(driver, 5); 	// up
-	
+	// Initializes all buttons for the operator
 	JoystickButton refreshPrefs2   = new JoystickButton(operator, 8);		
 	JoystickButton raiseStory2     = new JoystickButton(operator, 6);
 	JoystickButton lowerStory2     = new JoystickButton(operator, 4);
 	JoystickButton raiseElevation2 = new JoystickButton(operator, 3);	// down
 	JoystickButton lowerElevation2 = new JoystickButton(operator, 5);	// up
-	
+	// our sensors for the heightlimit and tote detectors
 	static DigitalInput heightLimit = new DigitalInput(7);
 	static DigitalInput tower1TotePresent = new DigitalInput(1);
 	static DigitalInput tower2TotePresent = new DigitalInput(2);
-	
+	// Initializes PIDTowers
 	public static PIDTower PIDTower1 = new PIDTower(8, 8, 3, 4);
 	public static PIDTower PIDTower2 = new PIDTower(9, 9, 5, 6);
-	
+	// Mapping values
 	public static final double DeadZone     = 0.05;
 	public static final double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
     public static final double JoyKneeTwoX_ = 0.8;        // second knee of joystick range which ends 'maneuvering range' and starts 'speed range'
     public static final double JoyMaxRange_ = 1.0;        // maximum input range of joysticks
     public static final double JoyKneeOneY_ = 0;		  // starts the first leg of the mapping
     public static final double JoyKneeTwoY_ = 0.35;		  
-    
+    // Preferences
     Preferences prefs = Preferences.getInstance();
-    
+    // PIDTOWER PID loop values
     double TowerP;
     double TowerI;
     double TowerD;
-    public static double towerMin;
-    public static double towerMax;
-    
-    double P;				// PID loop values
+    public static double TowerMin;
+    public static double TowerMax;
+    // MOTOR PID loop values
+    double P;				
     double I;				
     double D;
     double F;
@@ -103,9 +103,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public static boolean heightLimitState			= false;
     
     /**
-     * TODO: add preference for which auton code we use
-     * TODO: auton1: home & stand still - Done
-     * TODO: auton2: home & move forward
+     * add preference for which auton code we use - Done
+     * auton1: home & stand still - Done
+     * auton2: home & move forward - Done
      * TODO: auton3: home & pickuptote and move forward
      */
     
@@ -117,7 +117,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	
     /**
      * This function is run when the robot is first started up and should be used for any initialization code.
-     * TODO: implement a timeout exception handler
      */
     public void robotInit() 
     {
@@ -145,19 +144,20 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void updatePrefs()
     {
+    	// Prefs for the CANTalon PID values
         MaxRPM = prefs.getDouble("MaxRPM", 862.0);
-        P = prefs.getDouble("P", 0.0);   // can change values from here, press button to activate changes        
+        P = prefs.getDouble("P", 0.0);        
         I = prefs.getDouble("I", 0.0);
         D = prefs.getDouble("D", 0.0);
         F = prefs.getDouble("F", 1.0);
         iZone = prefs.getInt("iZone", 0);
         Ramp = prefs.getDouble("Ramp", 1200.0);
-        
+        // Auton Preferences
         autonSetting = prefs.getInt("AutonSetting", 1);	// goes from 1 to 4
         distanceToTravel = prefs.getDouble("distance", 10.0);
-        crabTrim = prefs.getDouble("CrabTrim", 0.75);
-        
-        SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
+        crabTrim = prefs.getDouble("CrabTrim", 0.75);	// manipulates the crabbing of motor3
+        //displays PID values on SmartDash
+        SmartDashboard.putNumber("CANTalon P", P);  
         SmartDashboard.putNumber("CANTalon I", I);
         SmartDashboard.putNumber("CANTalon D", D);
         SmartDashboard.putNumber("CANTalon F", F);
@@ -167,43 +167,41 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         SmartDashboard.putNumber("Distance to Travel", distanceToTravel);
         SmartDashboard.putNumber("Auton setting", autonSetting);
         SmartDashboard.putNumber("Crab Trim", crabTrim);
-        
         // PIDTOWER
-        
         TowerP = prefs.getDouble("TowerP", 0.004);   // can change values from here, press button to activate changes        
         TowerI = prefs.getDouble("TowerI", 0.0);
         TowerD = prefs.getDouble("TowerD", 0.0);
-        towerMin = prefs.getDouble("TowerMin", -0.5);
-        towerMax = prefs.getDouble("TowerMax", 0.5);	
+        TowerMin = prefs.getDouble("TowerMin", -0.5);
+        TowerMax = prefs.getDouble("TowerMax", 0.5);	
         PIDTower1.offSet_ = prefs.getDouble("Tower1Offset", 0.0);
         PIDTower2.offSet_ = prefs.getDouble("Tower2Offset", 0.0);
-        
-		SmartDashboard.putNumber("TowerMin", towerMin);
-		SmartDashboard.putNumber("TowerMax", towerMax);
+		SmartDashboard.putNumber("TowerMin", TowerMin);
+		SmartDashboard.putNumber("TowerMax", TowerMax);
         
         try
         {
-            motor1.setPID(P, I, D, F, iZone, Ramp, 0);  //sets PID constants 
+        	// sets PID constants 
+            motor1.setPID(P, I, D, F, iZone, Ramp, 0);   
             motor2.setPID(P, I, D, F, iZone, Ramp, 0);
             motor3.setPID(P, I, D, F, iZone, Ramp, 0);
-            
+            // changes controlmode to speed for PID
             motor1.changeControlMode(CANTalon.ControlMode.Speed);
         	motor2.changeControlMode(CANTalon.ControlMode.Speed);
         	motor3.changeControlMode(CANTalon.ControlMode.Speed);
-            
+            // enables PID control
             motor1.enableControl(); //starts feedback ctrl
             motor2.enableControl();
             motor3.enableControl();
-            
+            // PIDTower PID values set
             PIDTower1.controller_.setPID(TowerP, TowerI, TowerD);
             PIDTower2.controller_.setPID(TowerP, TowerI, TowerD);
-            
-            PIDTower1.controller_.setOutputRange(towerMin, towerMax);
-            PIDTower2.controller_.setOutputRange(towerMin, towerMax);
-            
+            // Sets maximum power for PIDTowers
+            PIDTower1.controller_.setOutputRange(TowerMin, TowerMax);
+            PIDTower2.controller_.setOutputRange(TowerMin, TowerMax);
+            // enables PID control for PIDTowers
             PIDTower1.controller_.enable();
             PIDTower2.controller_.enable();
-            
+            // synchronizes PIDTowers
         	PIDTower1.goHome();
         	PIDTower2.goHome();
         } 
@@ -235,6 +233,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
    
     /**
      * This function is called periodically during autonomous.
+     * This function selects which autonimous to run based on a preference: autonSetting.
      */
     public void autonomousPeriodic() 
     {
@@ -289,6 +288,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	driveMath(0, 0.5, 0, 1);
     }
     
+    /**
+     * This function
+     */
     public void auton2Periodic()
     {
     	double distance = Math.abs(motor1.getPosition()-StartPosition);
@@ -357,7 +359,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	periodic();
     	
     	boolean refreshPressed = isRefreshPressed();
-
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
     		updatePrefs();
@@ -375,7 +376,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    		PIDTower2.goUpStory();
 	    	}
 	    	prevRaiseStoryPressed = raiseStoryPressed;
-	
 	    	// going down story
 	    	boolean lowerStoryPressed = isLowerStoryPressed();
 	    	if(lowerStoryPressed && (prevLowerStoryPressed == false))
@@ -386,7 +386,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    		PIDTower2.goDownStory();
 	    	}
 	    	prevLowerStoryPressed = lowerStoryPressed;
-	    	
 	    	// going up elevation
 	    	boolean raiseElevationPressed = isRaiseElevationPressed();
 	    	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
@@ -395,7 +394,6 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    		PIDTower2.setElevationState(true);
 	    	}
 	    	prevRaiseElevationPressed = raiseElevationPressed;
-	    	
 	    	// going down elevation
 	    	boolean lowerElevationPressed = isLowerElevationPressed();
 	    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
@@ -407,19 +405,19 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	}
 	    	prevLowerElevationPressed = lowerElevationPressed;
     	}
-    	
+    	// if our towers are ready, both buttons for tote detection are pressed, and the trigger are pressed, the robot automatically picks up a tote
     	if(PIDTower1.readyForCommand() && PIDTower2.readyForCommand() && !tower1TotePresent.get() && !tower2TotePresent.get() && trigger.get())
     	{
     		PIDTower1.goUpStory();
     		PIDTower2.goUpStory();
     	}
-    	
+    	// gets the values for X, Y, and R from the driver
     	double Y = driver.getY();
     	double X = driver.getX();
     	double R = driver.getZ(); 
-    	
+    	// changes the values for easier driving
         Y = mapDrivingValue(Y);
-        X = mapDrivingValue(X);		// changes the values for easier driving
+        X = mapDrivingValue(X);		
         R = mapDrivingValue(R);
         
         double throttle = (driver.getThrottle() + 1) / 2;
@@ -458,6 +456,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
+     * This function updates our booleans for our sensors and displays them on our SmartDashboard.
+     * This function is responsible for the heightLimit logic.
      * Launched in every periodic function. 
      */
     public void periodic()
@@ -521,7 +521,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor3.set(0);
     	Timer.delay(0.5);
     }
-    
+    /**
+     * All isXXXXXXPressed() functions allow for both joysticks to control the towers meaning driver & operator control the towers
+     */
     public boolean isRefreshPressed()
     {
     	boolean refreshPressed1 = refreshPrefs1.get();
