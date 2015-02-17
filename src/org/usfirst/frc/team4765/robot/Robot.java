@@ -155,7 +155,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         
         autonSetting = prefs.getInt("Auton Setting", 1);	// goes from 1 to 4
         distanceToTravel = prefs.getDouble("distance", 10.0);
-        crabTrim = prefs.getDouble("Crab Trim", 0.1);
+        crabTrim = prefs.getDouble("Crab Trim", 0.75);
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("CANTalon I", I);
@@ -416,7 +416,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	
     	double Y = driver.getY();
     	double X = driver.getX();
-    	double R = driver.getZ() + crabTrim * X; 
+    	double R = driver.getZ(); 
     	
         Y = mapDrivingValue(Y);
         X = mapDrivingValue(X);		// changes the values for easier driving
@@ -434,7 +434,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     {   
     	double motor1speed = X - Y + -0.5 * R; 
     	double motor2speed = - X - Y + 0.5 * R;
-    	double motor3speed = 0.5 * X + R;
+    	double motor3speed = crabTrim * X + R;
         
     	double biggestValue = Math.max(motor1speed, Math.max(motor2speed, motor3speed));
     	
