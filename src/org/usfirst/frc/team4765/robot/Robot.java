@@ -153,9 +153,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         iZone = prefs.getInt("iZone", 0);
         Ramp = prefs.getDouble("Ramp", 1200.0);
         
-        autonSetting = prefs.getInt("Auton Setting", 1);	// goes from 1 to 4
+        autonSetting = prefs.getInt("AutonSetting", 1);	// goes from 1 to 4
         distanceToTravel = prefs.getDouble("distance", 10.0);
-        crabTrim = prefs.getDouble("Crab Trim", 0.75);
+        crabTrim = prefs.getDouble("CrabTrim", 0.75);
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("CANTalon I", I);
@@ -175,8 +175,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         TowerD = prefs.getDouble("TowerD", 0.0);
         towerMin = prefs.getDouble("TowerMin", -0.5);
         towerMax = prefs.getDouble("TowerMax", 0.5);	
-        PIDTower1.offSet_ = prefs.getDouble("Tower1 Offset", 0.0);
-        PIDTower2.offSet_ = prefs.getDouble("Tower2 Offset", 0.0);
+        PIDTower1.offSet_ = prefs.getDouble("Tower1Offset", 0.0);
+        PIDTower2.offSet_ = prefs.getDouble("Tower2Offset", 0.0);
         
 		SmartDashboard.putNumber("TowerMin", towerMin);
 		SmartDashboard.putNumber("TowerMax", towerMax);
