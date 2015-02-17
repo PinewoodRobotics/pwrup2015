@@ -432,6 +432,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void driveMath(double X, double Y, double R, double throttle)
     {   
+    	if(X < -0.5)
+    		X = -0.5;
+    	
     	double motor1speed = X - Y + -0.5 * R; 
     	double motor2speed = - X - Y + 0.5 * R;
     	double motor3speed = crabTrim * X + R;
