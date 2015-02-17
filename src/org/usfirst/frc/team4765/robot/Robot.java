@@ -35,19 +35,25 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 {
 	int autoLoopCounter;
 
-	public static CANTalon motor1 = new CANTalon(1); 
-	public static CANTalon motor2 = new CANTalon(2); // motors for driving
-	public static CANTalon motor3 = new CANTalon(3); 
+	public static CANTalon motor1  = new CANTalon(1); 
+	public static CANTalon motor2  = new CANTalon(2); // motors for driving
+	public static CANTalon motor3  = new CANTalon(3); 
 	
 	public static Joystick driver   = new Joystick(0); // joystick that controls the driving
-	JoystickButton trigger = new JoystickButton(driver, 1);
-	JoystickButton refreshPrefs = new JoystickButton(driver, 8);
-	JoystickButton run  = new JoystickButton(driver, 11);
-	JoystickButton step = new JoystickButton(driver, 12);		//joystick values
-	JoystickButton raiseStory = new JoystickButton(driver, 6);
-	JoystickButton lowerStory = new JoystickButton(driver, 4);
-	JoystickButton raiseElevation = new JoystickButton(driver, 3);	// down
-	JoystickButton lowerElevation = new JoystickButton(driver, 5); 	// up
+	public static Joystick operator = new Joystick(1);
+	
+	JoystickButton trigger         = new JoystickButton(driver, 1);		//joystick values
+	JoystickButton refreshPrefs1   = new JoystickButton(driver, 8);		
+	JoystickButton raiseStory1     = new JoystickButton(driver, 6);	
+	JoystickButton lowerStory1     = new JoystickButton(driver, 4);
+	JoystickButton raiseElevation1 = new JoystickButton(driver, 3);	// down
+	JoystickButton lowerElevation1 = new JoystickButton(driver, 5); 	// up
+	
+	JoystickButton refreshPrefs2   = new JoystickButton(operator, 8);		
+	JoystickButton raiseStory2     = new JoystickButton(operator, 6);
+	JoystickButton lowerStory2     = new JoystickButton(operator, 4);
+	JoystickButton raiseElevation2 = new JoystickButton(operator, 3);	// down
+	JoystickButton lowerElevation2 = new JoystickButton(operator, 5);	// up
 	
 	static DigitalInput heightLimit = new DigitalInput(7);
 	static DigitalInput tower1TotePresent = new DigitalInput(1);
@@ -81,6 +87,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     double StartPosition;
     int Profile;	    // value of 0 or 1
     int autonSetting;
+    double distanceToTravel;
+    double crabTrim;
 
     double[] motorSpeed = new double[4]; //holds motor speeds (in rpm)
     
@@ -146,6 +154,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         Ramp = prefs.getDouble("Ramp", 1200.0);
         
         autonSetting = prefs.getInt("Auton Setting", 1);	// goes from 1 to 4
+        distanceToTravel = prefs.getDouble("distance", 10.0);
+        crabTrim = prefs.getDouble("Crab Trim", 0.1);
         
         SmartDashboard.putNumber("CANTalon P", P);  //displays PID values on SmartDash
         SmartDashboard.putNumber("CANTalon I", I);
@@ -154,6 +164,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         SmartDashboard.putNumber("CANTalon iZone", iZone);
         SmartDashboard.putNumber("CANTalon Ramp", Ramp);
         SmartDashboard.putNumber("MaxRPM", MaxRPM);
+        SmartDashboard.putNumber("Distance to Travel", distanceToTravel);
+        SmartDashboard.putNumber("Auton setting", autonSetting);
+        SmartDashboard.putNumber("Crab Trim", crabTrim);
         
         // PIDTOWER
         
@@ -279,7 +292,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     public void auton2Periodic()
     {
     	double distance = Math.abs(motor1.getPosition()-StartPosition);
-    	if(distance > 10)
+    	if(distance > distanceToTravel)
     		driveMath(0, 0, 0, 0);
     }
 
@@ -290,7 +303,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     {
     	
     }
-        
+    
     /**
      * This takes the raw input values from the joystick and maps them into more convenient speeds.
      * The pre-set values can be changed where constants are initialized.
@@ -343,7 +356,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     {
     	periodic();
     	
-    	boolean refreshPressed = refreshPrefs.get();
+    	boolean refreshPressed = isRefreshPressed();
 
     	if(refreshPressed && (prevRefreshPressed == false))
     	{
@@ -354,7 +367,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	if(PIDTower1.readyForCommand() && PIDTower2.readyForCommand())
     	{
 	    	// going up story
-			boolean raiseStoryPressed = raiseStory.get();				// reads button values
+			boolean raiseStoryPressed = isRaiseStoryPressed();				// reads button values
 	    	if(raiseStoryPressed && (prevRaiseStoryPressed == false))
 	    	{
 	    		
@@ -364,7 +377,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	prevRaiseStoryPressed = raiseStoryPressed;
 	
 	    	// going down story
-	    	boolean lowerStoryPressed = lowerStory.get();
+	    	boolean lowerStoryPressed = isLowerStoryPressed();
 	    	if(lowerStoryPressed && (prevLowerStoryPressed == false))
 	    	{
 	    		PIDTower1.setHeightLimit(false);
@@ -375,7 +388,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	prevLowerStoryPressed = lowerStoryPressed;
 	    	
 	    	// going up elevation
-	    	boolean raiseElevationPressed = raiseElevation.get();
+	    	boolean raiseElevationPressed = isRaiseElevationPressed();
 	    	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
 	    	{
 	    		PIDTower1.setElevationState(true);
@@ -384,7 +397,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    	prevRaiseElevationPressed = raiseElevationPressed;
 	    	
 	    	// going down elevation
-	    	boolean lowerElevationPressed = lowerElevation.get();
+	    	boolean lowerElevationPressed = isLowerElevationPressed();
 	    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
 	    	{
 	    		PIDTower1.setHeightLimit(false);
@@ -403,7 +416,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	
     	double Y = driver.getY();
     	double X = driver.getX();
-    	double R = driver.getZ(); 
+    	double R = driver.getZ() + crabTrim * X; 
     	
         Y = mapDrivingValue(Y);
         X = mapDrivingValue(X);		// changes the values for easier driving
@@ -505,6 +518,67 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor3.set(0);
     	Timer.delay(0.5);
     }
+    
+    public boolean isRefreshPressed()
+    {
+    	boolean refreshPressed1 = refreshPrefs1.get();
+    	boolean refreshPressed2 = refreshPrefs2.get();
+    	if(refreshPressed1 || refreshPressed2)
+    	{
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    public boolean isRaiseStoryPressed()
+    {
+    	boolean raiseStoryPressed1 = raiseStory1.get();
+    	boolean raiseStoryPressed2 = raiseStory2.get();
+    	if(raiseStoryPressed1 || raiseStoryPressed2)
+    	{
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    public boolean isLowerStoryPressed()
+    {
+    	boolean lowerStoryPressed1 = lowerStory1.get();
+    	boolean lowerStoryPressed2 = lowerStory2.get();
+    	if(lowerStoryPressed1 || lowerStoryPressed2)
+    	{
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    public boolean isRaiseElevationPressed()
+    {
+    	boolean raiseElevationPressed1 = raiseElevation1.get();
+    	boolean raiseElevationPressed2 = raiseElevation2.get();
+    	if(raiseElevationPressed1 || raiseElevationPressed2)
+    	{
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    public boolean isLowerElevationPressed()
+    {
+    	boolean lowerElevationPressed1 = lowerElevation1.get();
+    	boolean lowerElevationPressed2 = lowerElevation2.get();
+    	if(lowerElevationPressed1 || lowerElevationPressed2)
+    	{
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
     
     /**
      * Runs the motor at max speed and prints the value.
