@@ -46,14 +46,14 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton refreshPrefs1   = new JoystickButton(driver, 8);		
 	JoystickButton raiseStory1     = new JoystickButton(driver, 6);	
 	JoystickButton lowerStory1     = new JoystickButton(driver, 4);
-	JoystickButton raiseElevation1 = new JoystickButton(driver, 3);	// down
-	JoystickButton lowerElevation1 = new JoystickButton(driver, 5); 	// up
+	JoystickButton raiseElevation1 = new JoystickButton(driver, 5);	// down
+	JoystickButton lowerElevation1 = new JoystickButton(driver, 3); 	// up
 	// Initializes all buttons for the operator
 	JoystickButton refreshPrefs2   = new JoystickButton(operator, 8);		
 	JoystickButton raiseStory2     = new JoystickButton(operator, 6);
 	JoystickButton lowerStory2     = new JoystickButton(operator, 4);
-	JoystickButton raiseElevation2 = new JoystickButton(operator, 3);	// down
-	JoystickButton lowerElevation2 = new JoystickButton(operator, 5);	// up
+	JoystickButton raiseElevation2 = new JoystickButton(operator, 5);	// down
+	JoystickButton lowerElevation2 = new JoystickButton(operator, 3);	// up
 	// our sensors for the heightlimit and tote detectors
 	static DigitalInput heightLimit = new DigitalInput(7);
 	static DigitalInput tower1TotePresent = new DigitalInput(1);
@@ -217,6 +217,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void autonomousInit() 
     {
+		auton1();
     	switch(autonSetting)
     	{
 	    	case 1:
@@ -265,14 +266,13 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void auton2Timer()
     {
-    	auton1();
     	Timer autonTimer = new Timer();
         autonTimer.reset();
         autonTimer.start();
         while(autonTimer.get() < 0.75)
         {
-        	motor1.set(MaxRPM * 0.5 * -1.0);
-        	motor2.set(MaxRPM * 0.5);
+        	motor1.set(MaxRPM * -0.5);
+        	motor2.set(MaxRPM *  0.5);
         }
         autonTimer.stop();
     }
@@ -283,9 +283,14 @@ public class Robot extends IterativeRobot // check the error, this happened afte
      */
     public void auton2Init()
     {
-    	auton1();
     	StartPosition = motor1.getPosition();
-    	driveMath(0, 0.5, 0, 1);
+    	driveMath(0, -0.5, 0.04, 1);
+    }
+    
+    public void auton3Init()
+    {
+        	StartPosition = motor1.getPosition();
+        	driveMath(0, 0.5, 0, 1);
     }
     
     /**
