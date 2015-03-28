@@ -40,7 +40,7 @@ public class PIDTower
 		controller_.setAbsoluteTolerance(20.0);
 	}
 	
-	/*\][][\*
+	/**
 	 * This function moves the towers up or down a distance corresponding to the platform height.
 	 * If the robot is already at platform, the robot does not move the chain up.
 	 * If the robot is already at floor, the robot does not move the chaind down.
