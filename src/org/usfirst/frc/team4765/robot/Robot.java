@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,7 +29,7 @@ import edu.wpi.first.wpilibj.can.*;
  * @author Pavel Khokhlov pkhokhlov@hotmail.com
  * @author Dean Reece	  dean@reeceweb.com
  * 
- * @version 17 February 2015
+ * @version 28 March 2015
  */
 
 public class Robot extends IterativeRobot // check the error, this happened after our late night drawing trouble shooting
@@ -46,21 +47,22 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	JoystickButton refreshPrefs1   = new JoystickButton(driver, 8);		
 	JoystickButton raiseStory1     = new JoystickButton(driver, 6);	
 	JoystickButton lowerStory1     = new JoystickButton(driver, 4);
-	JoystickButton raiseElevation1 = new JoystickButton(driver, 5);	// down
-	JoystickButton lowerElevation1 = new JoystickButton(driver, 3); 	// up
+	JoystickButton extendArm	   = new JoystickButton(driver, 5);	
+	JoystickButton retractArm	   = new JoystickButton(driver, 3);
 	// Initializes all buttons for the operator
 	JoystickButton refreshPrefs2   = new JoystickButton(operator, 8);		
 	JoystickButton raiseStory2     = new JoystickButton(operator, 6);
 	JoystickButton lowerStory2     = new JoystickButton(operator, 4);
-	JoystickButton raiseElevation2 = new JoystickButton(operator, 5);	// down
-	JoystickButton lowerElevation2 = new JoystickButton(operator, 3);	// up
+	JoystickButton changeElevation = new JoystickButton(operator, 5);	// used to change whether on platform or ground level
 	// our sensors for the heightlimit and tote detectors
-	static DigitalInput heightLimit = new DigitalInput(7);
+	static DigitalInput heightLimit       = new DigitalInput(7);
 	static DigitalInput tower1TotePresent = new DigitalInput(1);
 	static DigitalInput tower2TotePresent = new DigitalInput(2);
 	// Initializes PIDTowers
 	public static PIDTower PIDTower1 = new PIDTower(8, 8, 3, 4);
 	public static PIDTower PIDTower2 = new PIDTower(9, 9, 5, 6);
+	// Initializes our Arm extender
+	public static Talon ArmExtender  = new Talon(7);
 	// Mapping values
 	public static final double DeadZone     = 0.05;
 	public static final double JoyKneeOneX_ = 0.1;        // end of the deadzone & first knee of joystick range which starts 'maneuvering range'
@@ -84,9 +86,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     int    iZone; 			// i-zone that gives I a limit to cumulation
     double Ramp; 			// closeLoopRampRate Maximum change in voltage, Unit: volts/sec
     double MaxRPM;
-    double StartPosition;
-    int Profile;	    // value of 0 or 1
-    int autonSetting;
+    static double StartPosition;
+    int    Profile;	    // value of 0 or 1
+    int    autonSetting;
     double distanceToTravel;
     double crabTrim;
 
@@ -94,13 +96,14 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     
     int CANTimeouts;
     
-    public static boolean prevRefreshPressed        = false;	// remembers when the buttons on the joysitck were last pressed
-    public static boolean lastTrigger               = false;
-    public static boolean prevRaiseStoryPressed     = false;
-    public static boolean prevLowerStoryPressed     = false;
-    public static boolean prevRaiseElevationPressed = false;
-    public static boolean prevLowerElevationPressed = false;
-    public static boolean heightLimitState			= false;
+    public static boolean prevRefreshPressed         = false;	// remembers when the buttons on the joysitck were last pressed
+    public static boolean lastTrigger                = false;
+    public static boolean prevRaiseStoryPressed      = false;
+    public static boolean prevLowerStoryPressed      = false;
+    public static boolean heightLimitState			 = false;
+    public static boolean prevChangeElevationPressed = false;
+    
+    public static int autonState = 0;
     
     /**
      * add preference for which auton code we use - Done
@@ -175,6 +178,8 @@ public class Robot extends IterativeRobot // check the error, this happened afte
         TowerMax = prefs.getDouble("TowerMax", 0.5);	
         PIDTower1.offSet_ = prefs.getDouble("Tower1Offset", 0.0);
         PIDTower2.offSet_ = prefs.getDouble("Tower2Offset", 0.0);
+        SmartDashboard.putNumber("Tower1Offset", PIDTower1.offSet_);
+        SmartDashboard.putNumber("Tower2Offset", PIDTower2.offSet_);
 		SmartDashboard.putNumber("TowerMin", TowerMin);
 		SmartDashboard.putNumber("TowerMax", TowerMax);
         
@@ -224,10 +229,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    		break;
 	    	
 	    	case 2:
-	    		auton2Init();
+	    		auton2InitPullOut();
 	    	break;
 	    	
 	    	case 3:
+	    		auton2InitMoveBackward();
 	    		break;
     	}
     }
@@ -244,8 +250,11 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    		break;
 	    	
 	    	case 2:
-	    		auton2Periodic();
+	    		auton2PeriodicPullOut();
 	    	break;
+	    	
+	    	case 3:
+	    		auton2PeriodicMoveBackward();
     	}
     	periodic();
     }
@@ -261,46 +270,77 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	PIDTower2.periodic();
     }
     
-    /**
-     * This function moves the robot in auton based on a timer.
-     */
-    public void auton2Timer()
+    public void auton2PeriodicMoveBackward()
     {
-    	Timer autonTimer = new Timer();
-        autonTimer.reset();
-        autonTimer.start();
-        while(autonTimer.get() < 0.75)
-        {
-        	motor1.set(MaxRPM * -0.5);
-        	motor2.set(MaxRPM *  0.5);
-        }
-        autonTimer.stop();
+    	double distance = Math.abs(motor1.getPosition() - StartPosition);
+    	if(distance > 6500)
+    	{
+    		driveMath(0, 0, 0, 0);
+    	}
+    }
+    
+    public void auton2InitMoveBackward()
+    {
+    	StartPosition = motor1.getPosition();
+    	driveMath(0, 0.5, 0.04, 1);
     }
     
     /**
      * This function moves the robot in auton based on encoders.
      * This is called in autonPeriodic
      */
-    public void auton2Init()
+    public void auton2InitPullOut()
     {
+    	autonState = 0;
     	StartPosition = motor1.getPosition();
-    	driveMath(0, -0.5, 0.04, 1);
+    	driveMath(0, -0.5, 0.04, 1);	// negative Y makes the robot go FORWARD
+    								// positive Y makes the robot go BACKWARD
+    }
+    
+	public static Timer autonTimer = new Timer();
+    /**
+     * This function
+     */
+    public void auton2PeriodicPullOut()
+    {
+    	double distance = Math.abs(motor1.getPosition() - StartPosition);
+    	switch(autonState)
+    	{
+	    	case 0:
+	    		if(distance > 1120) // if greater than 1000 while moving forward
+	    		{
+	        		driveMath(0, 0, 0, 0);
+	        		ArmExtender.set(-0.5);
+	                autonTimer.reset();
+	                autonTimer.start();
+	        		autonState = 1;
+	    		}
+	    		break;
+	    		
+	    	case 1:
+	            if(autonTimer.get() > 0.51)
+	            {
+	            	autonTimer.stop();
+	            	driveMath(0 , 0.5, 0.04, 1);
+	            	autonState = 2;
+	            }
+	            
+	    		break;
+	    		
+	    	case 2:
+	        	if(distance > 7500)
+	        	{
+	        		driveMath(0, 0, 0, 0);
+	        		ArmExtender.set(0.5);
+	        	}
+	        	break;
+    	}
     }
     
     public void auton3Init()
     {
         	StartPosition = motor1.getPosition();
         	driveMath(0, 0.5, 0, 1);
-    }
-    
-    /**
-     * This function
-     */
-    public void auton2Periodic()
-    {
-    	double distance = Math.abs(motor1.getPosition()-StartPosition);
-    	if(distance > distanceToTravel)
-    		driveMath(0, 0, 0, 0);
     }
 
     /**
@@ -369,14 +409,27 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     		updatePrefs();
     	}
     	prevRefreshPressed = refreshPressed;
-
+    	
+    	// ARM EXTENDER
+    	if(extendArm.get() == true)
+    	{
+    		ArmExtender.set(0.5); // EXTENDS
+    	}
+    	else if(retractArm.get() == true)
+    	{
+    		ArmExtender.set(-0.5);	// RETRACT
+    	}
+    	else
+    	{
+    		ArmExtender.set(0);
+    	}
+    	
     	if(PIDTower1.readyForCommand() && PIDTower2.readyForCommand())
     	{
 	    	// going up story
 			boolean raiseStoryPressed = isRaiseStoryPressed();				// reads button values
 	    	if(raiseStoryPressed && (prevRaiseStoryPressed == false))
 	    	{
-	    		
 	    		PIDTower1.goUpStory();
 	    		PIDTower2.goUpStory();
 	    	}
@@ -391,24 +444,9 @@ public class Robot extends IterativeRobot // check the error, this happened afte
 	    		PIDTower2.goDownStory();
 	    	}
 	    	prevLowerStoryPressed = lowerStoryPressed;
-	    	// going up elevation
-	    	boolean raiseElevationPressed = isRaiseElevationPressed();
-	    	if(raiseElevationPressed && (prevRaiseElevationPressed == false))
-	    	{
-	    		PIDTower1.setElevationState(true);
-	    		PIDTower2.setElevationState(true);
-	    	}
-	    	prevRaiseElevationPressed = raiseElevationPressed;
-	    	// going down elevation
-	    	boolean lowerElevationPressed = isLowerElevationPressed();
-	    	if(lowerElevationPressed && (prevLowerElevationPressed == false))
-	    	{
-	    		PIDTower1.setHeightLimit(false);
-	    		PIDTower2.setHeightLimit(false);
-	    		PIDTower1.setElevationState(false);
-	    		PIDTower2.setElevationState(false);
-	    	}
-	    	prevLowerElevationPressed = lowerElevationPressed;
+	    	// make sure that height limit is regulated
+	    	PIDTower1.setElevationState(getElevationSwitch());
+	    	PIDTower2.setElevationState(getElevationSwitch());
     	}
     	// if our towers are ready, both buttons for tote detection are pressed, and the trigger are pressed, the robot automatically picks up a tote
     	if(PIDTower1.readyForCommand() && PIDTower2.readyForCommand() && !tower1TotePresent.get() && !tower2TotePresent.get() && trigger.get())
@@ -526,11 +564,23 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	motor3.set(0);
     	Timer.delay(0.5);
     }
+    
+    public void extendArmForward()
+    {
+    	ArmExtender.set(0.5);
+    }
+    
+    public void retractArmBackward()
+    {
+    	ArmExtender.set(-0.5);
+    }
+    
     /**
      * All isXXXXXXPressed() functions allow for both joysticks to control the towers meaning driver & operator control the towers
      */
     public boolean isRefreshPressed()
     {
+    	/*
     	boolean refreshPressed1 = refreshPrefs1.get();
     	boolean refreshPressed2 = refreshPrefs2.get();
     	if(refreshPressed1 || refreshPressed2)
@@ -539,56 +589,35 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     	}
     	
     	return false;
+    	*/
+    	return (refreshPrefs1.get() || refreshPrefs2.get());
     }
     
+    /**
+     * This function returns if the raise command was given by either the driver or operator
+     */
     public boolean isRaiseStoryPressed()
     {
-    	boolean raiseStoryPressed1 = raiseStory1.get();
-    	boolean raiseStoryPressed2 = raiseStory2.get();
-    	if(raiseStoryPressed1 || raiseStoryPressed2)
-    	{
-    		return true;
-    	}
-    	
-    	return false;
+    	return (raiseStory1.get() || raiseStory2.get());
     }
     
+    /**
+     * This function returns if the lower command was given by either the driver or operator
+     */
     public boolean isLowerStoryPressed()
     {
-    	boolean lowerStoryPressed1 = lowerStory1.get();
-    	boolean lowerStoryPressed2 = lowerStory2.get();
-    	if(lowerStoryPressed1 || lowerStoryPressed2)
-    	{
-    		return true;
-    	}
-    	
-    	return false;
+    	return (lowerStory1.get() || lowerStory2.get());
     }
     
-    public boolean isRaiseElevationPressed()
+    /**
+     * 	True  - platform
+     * 	False - floor
+     * @return
+     */
+    public boolean getElevationSwitch()
     {
-    	boolean raiseElevationPressed1 = raiseElevation1.get();
-    	boolean raiseElevationPressed2 = raiseElevation2.get();
-    	if(raiseElevationPressed1 || raiseElevationPressed2)
-    	{
-    		return true;
-    	}
-    	
-    	return false;
+    	return changeElevation.get();
     }
-    
-    public boolean isLowerElevationPressed()
-    {
-    	boolean lowerElevationPressed1 = lowerElevation1.get();
-    	boolean lowerElevationPressed2 = lowerElevation2.get();
-    	if(lowerElevationPressed1 || lowerElevationPressed2)
-    	{
-    		return true;
-    	}
-    	
-    	return false;
-    }
-    
     
     /**
      * Runs the motor at max speed and prints the value.
@@ -601,7 +630,7 @@ public class Robot extends IterativeRobot // check the error, this happened afte
     }
     
     /**
-     * gets rid of the popup that shows the talons and doesn't let us see PID
+     * Gets rid of the popup that shows the talons and doesn't let us see PID
      */
     public void testInit()
     {
