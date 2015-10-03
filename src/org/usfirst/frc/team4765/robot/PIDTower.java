@@ -73,7 +73,7 @@ public class PIDTower
 		if(heightLimit_ == true)
 			return;
 		
-		goToSetPoint(controller_.getSetpoint() + StoryDiff);
+		goToSetPoint(setPoint_ + StoryDiff);
 	}
 	
 	/**
@@ -81,7 +81,7 @@ public class PIDTower
 	 */
 	public void goDownStory()
 	{
-		goToSetPoint(controller_.getSetpoint() - StoryDiff);
+		goToSetPoint(setPoint_ - StoryDiff);
 	}
 	
 	/**
@@ -133,7 +133,6 @@ public class PIDTower
 		
 		if(heightLimit_ == true)
 			return true;
-		
 		return controller_.onTarget();
 	}
 	
